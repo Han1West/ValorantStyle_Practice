@@ -1,0 +1,22 @@
+[33mcommit 4a8b2b7e45b35f0ea3eb7f3088d1f6b42dafac5d[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Merge: b2a312d 064f62b
+Author: Han1West <117280459+Han1West@users.noreply.github.com>
+Date:   Mon Jan 12 19:07:05 2026 +0900
+
+    Merge pull request #1 from Han1West/test
+    
+    test
+
+[33mcommit 064f62b26927fbafb743d3f1ba718d3b733bfead[m[33m ([m[1;32mtest[m[33m)[m
+Author: Han1West <117280459+Han1West@users.noreply.github.com>
+Date:   Mon Jan 12 19:06:40 2026 +0900
+
+    test
+    
+    test
+
+[33mcommit b2a312de428a31cd02a2d678659aea02101bb1d3[m
+Author: Han1West <117280459+Han1West@users.noreply.github.com>
+Date:   Mon Jan 12 18:49:14 2026 +0900
+
+    initial commit, already coded
