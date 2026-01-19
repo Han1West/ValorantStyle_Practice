@@ -106,6 +106,11 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "Recoil")
 	FVector2D AccumulatedAimOffset;
 
+	UPROPERTY(EditAnywhere)
+	float MaxRange = 1000.f;
+	UPROPERTY(EditAnywhere)
+	float Damage = 10.f;
+
 protected:
 	virtual bool CanReload() const;
 	virtual void OnReloadStart();
@@ -120,4 +125,6 @@ protected:
 	float GetCurrentSpread() const;
 
 	bool IsUnstableState() const;
+
+	AController* GetOwnerController() const;
 };

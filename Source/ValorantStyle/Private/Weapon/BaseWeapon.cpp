@@ -130,7 +130,7 @@ bool ABaseWeapon::GunTraceWithRecoil(FHitResult& Hit, FVector& ShotDirection, co
 	}
 
 	ShotDirection = -ShotDir;
-	FVector End = Location + ShotDir * 10000.f;
+	FVector End = Location + ShotDir * MaxRange;
 	FCollisionQueryParams Params;
 	// 해당 무기와 사용자는 충돌 무시
 	Params.AddIgnoredActor(this);
@@ -221,4 +221,14 @@ bool ABaseWeapon::IsUnstableState() const
 	}
 
 	return Player->IsMoving() || Player->IsAirborne();
+}
+
+AController* ABaseWeapon::GetOwnerController() const
+{
+	APawn* OwnerPawn = Cast<APawn>(GetOwner());
+	if (!OwnerPawn)
+	{
+		return nullptr;
+	}
+	return OwnerPawn->GetController();
 }
