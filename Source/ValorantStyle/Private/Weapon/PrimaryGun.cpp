@@ -23,6 +23,9 @@ void APrimaryGun::BeginPlay()
 
 	TriggerDelayTime = 0.1f;
 
+	MaxRange = 10000.f;
+	Damage = 30.f;
+
 	CurrentMagazine = GetWorld()->SpawnActor<AMagazine>(MagazineClass);
 	CurrentMagazine->AttachToComponent(Mesh, FAttachmentTransformRules::KeepRelativeTransform, TEXT("Magazine_Socket"));
 }
@@ -151,12 +154,21 @@ void APrimaryGun::FireOnce()
 	AccumulatedAimOffset.Y = FMath::Min(AccumulatedAimOffset.Y, 100.f);
 
 	FHitResult Hit;
-	FVector ShorDirection;
+	FVector ShotDirection;
 	
-	if (GunTraceWithRecoil(Hit, ShorDirection, Recoil))
+	if (GunTraceWithRecoil(Hit, ShotDirection, Recoil))
 	{
 		DrawDebugPoint(GetWorld(), Hit.Location, 20, FColor::Red, true);
 		UE_LOG(LogTemp, Warning, TEXT("Line Trace Success"));
+
+		AActor* HitActor = Hit.GetActor();
+		if (HitActor)
+		{
+			FPointDamageEvent DamageEvent(Damage, Hit, ShotDirection, nullptr);			
+			AController* OwnerController = GetOwnerController();
+			HitActor->TakeDamage(Damage, DamageEvent, OwnerController, this);
+		}
+
 	}
 	else
 	{
