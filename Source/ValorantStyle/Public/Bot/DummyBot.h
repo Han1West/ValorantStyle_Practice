@@ -6,6 +6,16 @@
 #include "GameFramework/Character.h"
 #include "DummyBot.generated.h"
 
+UENUM(BlueprintType)
+enum class EHitPart : uint8
+{
+	Body,
+	Head,	
+	ArmLeg,
+
+	None
+};
+
 UCLASS()
 class VALORANTSTYLE_API ADummyBot : public ACharacter
 {
@@ -43,4 +53,9 @@ private:
 	float Health;
 	UPROPERTY(VisibleAnywhere)
 	float Shield;	
+
+	TMap<FName, EHitPart> BoneToPartMap;
+
+private:
+	void InitBoneMap();
 };
