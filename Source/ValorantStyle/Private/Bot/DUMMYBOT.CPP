@@ -16,8 +16,10 @@ ADummyBot::ADummyBot()
 // Called when the game starts or when spawned
 void ADummyBot::BeginPlay()
 {
-	Health = 100.f;
-	Super::BeginPlay();	
+	Super::BeginPlay();
+	
+	InitBoneMap();
+	Health = 100.f;		
 }
 
 // Called every frame
@@ -49,6 +51,34 @@ float ADummyBot::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
 {
 	// 적용할 데미지
 	float TotalDamageToApplied = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	FName HitBoneName = NAME_None;
+
+	if (DamageEvent.GetTypeID() == FPointDamageEvent::ClassID)
+	{
+		const FPointDamageEvent* PointDamageEvent = static_cast<const FPointDamageEvent*>(&DamageEvent);
+		HitBoneName = PointDamageEvent->HitInfo.BoneName;
+		UE_LOG(LogTemp, Warning, TEXT("Hit Bone is : %s"), *HitBoneName.ToString());
+	}
+
+	EHitPart Part = BoneToPartMap.FindRef(HitBoneName);
+	switch (Part)
+	{
+	case EHitPart::Head:
+		TotalDamageToApplied *= 4.f;
+		break;
+	case EHitPart::Body:
+		break;
+	case EHitPart::ArmLeg:
+		TotalDamageToApplied *= 0.85f;
+		break;
+	case EHitPart::None:
+		break;
+	default:
+		break;
+	}
+
+	UE_LOG(LogTemp, Display, TEXT("Applied Damage : %f"), TotalDamageToApplied);
 
 	// 현재 체력과 쉴드에 비례하여 체력을 감소 시킨다.
 	float DamageToHealth = TotalDamageToApplied;
@@ -98,4 +128,25 @@ float ADummyBot::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
 
 
 	return TotalDamageToApplied;
+}
+
+void ADummyBot::InitBoneMap()
+{
+	BoneToPartMap.Add("head", EHitPart::Head);
+
+	BoneToPartMap.Add("upperarm_l", EHitPart::ArmLeg);
+	BoneToPartMap.Add("lowerarm_l", EHitPart::ArmLeg);
+	BoneToPartMap.Add("hand_l", EHitPart::ArmLeg);
+
+	BoneToPartMap.Add("upperarm_r", EHitPart::ArmLeg);
+	BoneToPartMap.Add("lowerarm_r", EHitPart::ArmLeg);
+	BoneToPartMap.Add("hand_R", EHitPart::ArmLeg);
+
+	BoneToPartMap.Add("thigh_l", EHitPart::ArmLeg);
+	BoneToPartMap.Add("calf_l", EHitPart::ArmLeg);
+	BoneToPartMap.Add("foot_l", EHitPart::ArmLeg);
+
+	BoneToPartMap.Add("thigh_r", EHitPart::ArmLeg);
+	BoneToPartMap.Add("calf_r", EHitPart::ArmLeg);
+	BoneToPartMap.Add("foot_r", EHitPart::ArmLeg);
 }

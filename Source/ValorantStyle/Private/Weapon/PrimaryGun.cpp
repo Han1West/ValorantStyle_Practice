@@ -24,7 +24,8 @@ void APrimaryGun::BeginPlay()
 	TriggerDelayTime = 0.1f;
 
 	MaxRange = 10000.f;
-	Damage = 30.f;
+	NormalDamage = 35.f;
+	
 
 	CurrentMagazine = GetWorld()->SpawnActor<AMagazine>(MagazineClass);
 	CurrentMagazine->AttachToComponent(Mesh, FAttachmentTransformRules::KeepRelativeTransform, TEXT("Magazine_Socket"));
@@ -160,13 +161,13 @@ void APrimaryGun::FireOnce()
 	{
 		DrawDebugPoint(GetWorld(), Hit.Location, 20, FColor::Red, true);
 		UE_LOG(LogTemp, Warning, TEXT("Line Trace Success"));
-
+		
 		AActor* HitActor = Hit.GetActor();
 		if (HitActor)
-		{
-			FPointDamageEvent DamageEvent(Damage, Hit, ShotDirection, nullptr);			
+		{			
+			FPointDamageEvent DamageEvent(NormalDamage, Hit, ShotDirection, nullptr);			
 			AController* OwnerController = GetOwnerController();
-			HitActor->TakeDamage(Damage, DamageEvent, OwnerController, this);
+			HitActor->TakeDamage(NormalDamage, DamageEvent, OwnerController, this);
 		}
 
 	}

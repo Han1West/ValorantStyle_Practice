@@ -108,8 +108,10 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	float MaxRange = 1000.f;
+
 	UPROPERTY(EditAnywhere)
-	float Damage = 10.f;
+	float NormalDamage = 10.f;
+
 
 protected:
 	virtual bool CanReload() const;
