@@ -55,7 +55,6 @@ private:
 	float Shield;	
 
 	TMap<FName, EHitPart> BoneToPartMap;
-
 private:
 	void InitBoneMap();
 };

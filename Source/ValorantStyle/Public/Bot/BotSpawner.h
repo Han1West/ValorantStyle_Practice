@@ -30,20 +30,35 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Spawner", meta = (AllowPrivateAccess = "true"))
 	class UBoxComponent* CollisionBox;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Spawner", meta = (AllowPrivateAccess = "true"))
+	class UBoxComponent* SpawnArea;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Spawner")
+	TSubclassOf<class ADummyBot> DummyBotClass;
+
+	UPROPERTY()
+	ADummyBot* SpawnedBot;
+
+	UPROPERTY()
+	TArray<ADummyBot*> SpawnedBotArray;
+
 	UPROPERTY(EditDefaultsOnly)
 	int32 MaxSpawnCount = 20;
 	
 	UPROPERTY(EditDefaultsOnly)
-	int32 CurSpawnCount = 0;
+	int32 CurSpawnedCount = 0;
 
 	UPROPERTY(VisibleAnywhere)
 	bool bBotSpawned = false;
 
 	bool bActivate = true;
 	float DelayTime = 0.f;
+	float AdjustZLocaiton = 0.f;
 private:
 	void ToggleSpawn();
 
-	void SpawnBot();
-	void DespawnBot();
+	void TrySpawnAllBot();
+	void DespawnAllBot();
+
+	bool GetGroundPointInBox(FVector& OutLocation) const;
 };
