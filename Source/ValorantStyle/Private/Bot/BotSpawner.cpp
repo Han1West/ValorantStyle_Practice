@@ -121,7 +121,6 @@ void ABotSpawner::TrySpawnAllBot()
 			return;
 		}
 
-
 		FVector SpawnLocation;
 
 		if (!GetGroundPointInBox(SpawnLocation))
@@ -133,7 +132,6 @@ void ABotSpawner::TrySpawnAllBot()
 		NonSpawnedBot->SetActorHiddenInGame(false);
 		NonSpawnedBot->SetActorEnableCollision(true);
 		CurSpawnedCount++;
-
 	}
 }
 
@@ -188,4 +186,34 @@ bool ABotSpawner::GetGroundPointInBox(FVector& OutLocation) const
 		return true;
 	}
 	return false;
+}
+
+bool ABotSpawner::GiveNewSpawnLocation(FVector& OutLocation)
+{
+	if (GetGroundPointInBox(OutLocation))
+	{
+		return true;
+	}
+
+	return false;
+}
+
+void ABotSpawner::ToggleDummyShiled(bool bMax)
+{
+	bShiledTrigger = !bShiledTrigger;
+	if (bShiledTrigger)
+	{
+		for (ADummyBot* Bot : SpawnedBotArray)
+		{
+			Bot->OnShield(bMax);
+		}
+	}
+	else
+	{
+		for (ADummyBot* Bot : SpawnedBotArray)
+		{
+			Bot->OffShield();
+		}
+
+	}
 }

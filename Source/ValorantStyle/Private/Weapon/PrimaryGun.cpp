@@ -160,7 +160,7 @@ void APrimaryGun::FireOnce()
 	if (GunTraceWithRecoil(Hit, ShotDirection, Recoil))
 	{
 		DrawDebugPoint(GetWorld(), Hit.Location, 20, FColor::Red, true);
-		UE_LOG(LogTemp, Warning, TEXT("Line Trace Success"));
+		//UE_LOG(LogTemp, Warning, TEXT("Line Trace Success"));
 		
 		AActor* HitActor = Hit.GetActor();
 		if (HitActor)

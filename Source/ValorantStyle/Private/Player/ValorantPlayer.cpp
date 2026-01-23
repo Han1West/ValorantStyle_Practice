@@ -2,11 +2,13 @@
 
 
 #include "Player/ValorantPlayer.h"
+#include "Bot/BotSpawner.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Weapon/BaseWeapon.h"
 #include "Magazine/Magazine.h"
 #include "Weapon/PrimaryGun.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AValorantPlayer::AValorantPlayer()
@@ -68,6 +70,8 @@ void AValorantPlayer::BeginPlay()
 	GetCharacterMovement()->AirControlBoostVelocityThreshold = 25.f;
 	GetCharacterMovement()->BrakingFrictionFactor = 0.f;
 	GetCharacterMovement()->BrakingDecelerationFalling = 0.f;
+
+	BotSpawner = Cast<ABotSpawner>(UGameplayStatics::GetActorOfClass(GetWorld(), ABotSpawner::StaticClass()));
 }
 
 // Called every frame
@@ -123,6 +127,8 @@ void AValorantPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 	PlayerInputComponent->BindAction(TEXT("SwapMelee"), IE_Pressed, this, &AValorantPlayer::SelectWeapon1);
 
 	PlayerInputComponent->BindAction(TEXT("Reload"), IE_Pressed, this, &AValorantPlayer::ReloadPressed);
+	PlayerInputComponent->BindAction(TEXT("DummyBotMaxShiledTrigger"), IE_Pressed, this, &AValorantPlayer::DummyMaxShieldTriggerPressed);
+	PlayerInputComponent->BindAction(TEXT("DummyBotNormalShiledTrigger"), IE_Pressed, this, &AValorantPlayer::DummyNormalShieldTriggerPressed);
 }
 
 void AValorantPlayer::AdjustSpeed()
@@ -220,6 +226,16 @@ void AValorantPlayer::ReloadPressed()
 	{
 		TakeReload();
 	}
+}
+
+void AValorantPlayer::DummyMaxShieldTriggerPressed()
+{
+	BotSpawner->ToggleDummyShiled(true);
+}
+
+void AValorantPlayer::DummyNormalShieldTriggerPressed()
+{
+	BotSpawner->ToggleDummyShiled(false);
 }
 
 void AValorantPlayer::UseWeaponSurAbility()

@@ -50,11 +50,29 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	float MaxShield = 50;
 	UPROPERTY(VisibleAnywhere)
-	float Health;
+	float Health = 0;
 	UPROPERTY(VisibleAnywhere)
-	float Shield;	
+	float Shield = 0;	
+	UPROPERTY(EditAnywhere)
+	bool bUseShield = false;
+
+	UPROPERTY()
+	class ABotSpawner* BotSpawner = nullptr;
+
+
+	FTimerHandle RespawnTimerHandle;
 
 	TMap<FName, EHitPart> BoneToPartMap;
 private:
 	void InitBoneMap();
+
+	float CalculatePartialDamage(float OriginDamage, FDamageEvent const& DamageEvent);
+	void CalculateDamageWithShield(float OriginDamage);
+	void DummyDeathProcess();
+	void DummyRespawnWithNewLocation();
+
+public:
+	void SetUseShield(bool bUse) { bUseShield = bUse; }
+	void OnShield(bool bMax);
+	void OffShield();
 };

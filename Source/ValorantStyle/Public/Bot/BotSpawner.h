@@ -52,6 +52,7 @@ private:
 	bool bBotSpawned = false;
 
 	bool bActivate = true;
+	bool bShiledTrigger = false;
 	float DelayTime = 0.f;
 	float AdjustZLocaiton = 0.f;
 private:
@@ -61,4 +62,9 @@ private:
 	void DespawnAllBot();
 
 	bool GetGroundPointInBox(FVector& OutLocation) const;
+
+public:
+	bool GiveNewSpawnLocation(FVector& Outlocation);
+	void ToggleDummyShiled(bool bMax);
+
 };
