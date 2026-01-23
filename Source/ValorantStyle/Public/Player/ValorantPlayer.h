@@ -85,6 +85,8 @@ private:
 	void CrouchReleased();
 	void InspectPressed();
 	void ReloadPressed();
+	void DummyNormalShieldTriggerPressed();
+	void DummyMaxShieldTriggerPressed();
 
 	void UseWeaponSurAbility();
 	void ReleaseWeaponSurAbility();
@@ -150,4 +152,6 @@ private:
 private:
 	float OriginMaxSpeed = 0.f;
 	int32 CurrentWeaponIdx = -1;
+
+	class ABotSpawner* BotSpawner = nullptr;
 };
