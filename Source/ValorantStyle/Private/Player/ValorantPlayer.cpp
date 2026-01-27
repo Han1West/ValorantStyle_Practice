@@ -9,6 +9,9 @@
 #include "Magazine/Magazine.h"
 #include "Weapon/PrimaryGun.h"
 #include "Kismet/GameplayStatics.h"
+#include "Skill/SkillComponent.h"
+#include "Skill/JettSkillComponent.h"
+#include "Skill/PhoenixSkillComponent.h"
 
 // Sets default values
 AValorantPlayer::AValorantPlayer()
@@ -29,6 +32,8 @@ AValorantPlayer::AValorantPlayer()
 
 	ArmsMesh->bCastDynamicShadow = false;
 	ArmsMesh->CastShadow = false;
+
+	SkillComponent = CreateDefaultSubobject<USkillComponent>(TEXT("SkillComp"));
 }
 
 // Called when the game starts or when spawned
@@ -72,6 +77,8 @@ void AValorantPlayer::BeginPlay()
 	GetCharacterMovement()->BrakingDecelerationFalling = 0.f;
 
 	BotSpawner = Cast<ABotSpawner>(UGameplayStatics::GetActorOfClass(GetWorld(), ABotSpawner::StaticClass()));
+
+	SetCharaterTypeToJett();
 }
 
 // Called every frame
@@ -129,6 +136,15 @@ void AValorantPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 	PlayerInputComponent->BindAction(TEXT("Reload"), IE_Pressed, this, &AValorantPlayer::ReloadPressed);
 	PlayerInputComponent->BindAction(TEXT("DummyBotMaxShiledTrigger"), IE_Pressed, this, &AValorantPlayer::DummyMaxShieldTriggerPressed);
 	PlayerInputComponent->BindAction(TEXT("DummyBotNormalShiledTrigger"), IE_Pressed, this, &AValorantPlayer::DummyNormalShieldTriggerPressed);
+
+	PlayerInputComponent->BindAction(TEXT("Skill1"), IE_Pressed, this, &AValorantPlayer::Skill1Pressed);
+	PlayerInputComponent->BindAction(TEXT("Skill2"), IE_Pressed, this, &AValorantPlayer::Skill2Pressed);
+	PlayerInputComponent->BindAction(TEXT("Skill3"), IE_Pressed, this, &AValorantPlayer::Skill3Pressed);
+	PlayerInputComponent->BindAction(TEXT("SkillUlti"), IE_Pressed, this, &AValorantPlayer::SkillUltiPressed);
+
+	PlayerInputComponent->BindAction(TEXT("PickJett"), IE_Pressed, this, &AValorantPlayer::SetCharaterTypeToJett);
+	PlayerInputComponent->BindAction(TEXT("PickPhoenix"), IE_Pressed, this, &AValorantPlayer::SetCharaterTypeToPhoenix);
+
 }
 
 void AValorantPlayer::AdjustSpeed()
@@ -230,11 +246,13 @@ void AValorantPlayer::ReloadPressed()
 
 void AValorantPlayer::DummyMaxShieldTriggerPressed()
 {
+	UE_LOG(LogTemp, Warning, TEXT("Dummy Has Max Shiled !!"));
 	BotSpawner->ToggleDummyShiled(true);
 }
 
 void AValorantPlayer::DummyNormalShieldTriggerPressed()
 {
+	UE_LOG(LogTemp, Warning, TEXT("Dummy Has Normal Shiled !!"));
 	BotSpawner->ToggleDummyShiled(false);
 }
 
@@ -267,6 +285,40 @@ void AValorantPlayer::UseWeaponSubAbility()
 void AValorantPlayer::ReleaseWeaponSubAbility()
 {
 	bSubWeapon = false;
+}
+
+void AValorantPlayer::SetCharaterTypeToJett()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Characher Changed to Jett !!"));
+	CurrentCharacterType = ECharacterType::Jett;	
+	SetCharacterType(CurrentCharacterType);
+}
+
+void AValorantPlayer::SetCharaterTypeToPhoenix()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Characher Changed to Phoenix !!"));
+	CurrentCharacterType = ECharacterType::Phoenix;
+	SetCharacterType(CurrentCharacterType);
+}
+
+void AValorantPlayer::Skill1Pressed()
+{
+	SkillComponent->UseSkill1();
+}
+
+void AValorantPlayer::Skill2Pressed()
+{
+	SkillComponent->UseSkill2();
+}
+
+void AValorantPlayer::Skill3Pressed()
+{
+	SkillComponent->UseSkill3();
+}
+
+void AValorantPlayer::SkillUltiPressed()
+{
+	SkillComponent->UseSkillUlti();
 }
 
 void AValorantPlayer::EquipWeapon(int32 Index)
@@ -337,6 +389,30 @@ void AValorantPlayer::ApplyRecoil(float DeltaTime)
 	{
 		CurrentWeapon->CurrentRecoilOffset = FMath::Vector2DInterpTo(CurrentWeapon->CurrentRecoilOffset, FVector2D::ZeroVector, DeltaTime, CurrentWeapon->RecoilRecoverSpeed);
 	}
+}
+
+void AValorantPlayer::SetCharacterType(ECharacterType Type)
+{
+	if (SkillComponent)
+	{
+		SkillComponent->DestroyComponent();
+	}
+
+	switch (Type)
+	{
+	case ECharacterType::Jett:
+		SkillComponent = NewObject<UJettSkillComponent>(this);
+		break;
+	case ECharacterType::Phoenix:
+		SkillComponent = NewObject<UPhoenixSkillComponent>(this);
+		break;
+	case ECharacterType::NONE:
+		break;
+	default:
+		break;
+	}
+
+	SkillComponent->RegisterComponent();
 }
 
 void AValorantPlayer::StartReload()
