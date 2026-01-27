@@ -6,6 +6,13 @@
 #include "GameFramework/Character.h"
 #include "ValorantPlayer.generated.h"
 
+enum class ECharacterType
+{
+	Jett,
+	Phoenix,
+	NONE,
+};
+
 class ABaseWeapon;
 
 UCLASS()
@@ -88,11 +95,19 @@ private:
 	void DummyNormalShieldTriggerPressed();
 	void DummyMaxShieldTriggerPressed();
 
+	void Skill1Pressed();
+	void Skill2Pressed();
+	void Skill3Pressed();
+	void SkillUltiPressed();
+
 	void UseWeaponSurAbility();
 	void ReleaseWeaponSurAbility();
 
 	void UseWeaponSubAbility();
 	void ReleaseWeaponSubAbility();
+
+	void SetCharaterTypeToJett();
+	void SetCharaterTypeToPhoenix();
 	//
 
 	void EquipWeapon(int32 Index);
@@ -103,6 +118,8 @@ private:
 
 	void ApplyRecoil(float DeltaTime);
 
+	void SetCharacterType(ECharacterType Type);
+
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "FPS", meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* CameraComp;
@@ -110,6 +127,9 @@ private:
 	class USkeletalMeshComponent* ArmsMesh;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "FPS", meta = (AllowPrivateAccess = "true"))
 	class USceneComponent* FPView;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	class USkillComponent* SkillComponent;
+
 
 	UPROPERTY(EditAnywhere)
 	float Speed = 1.f;
@@ -148,6 +168,8 @@ private:
 
 	FVector2D CurrentCameraRecoil = FVector2D::ZeroVector;
 	FVector2D LastAppliedRecoil = FVector2D::ZeroVector;
+
+	ECharacterType CurrentCharacterType = ECharacterType::NONE;
 
 private:
 	float OriginMaxSpeed = 0.f;
