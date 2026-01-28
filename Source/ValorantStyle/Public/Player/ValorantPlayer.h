@@ -95,9 +95,9 @@ private:
 	void DummyNormalShieldTriggerPressed();
 	void DummyMaxShieldTriggerPressed();
 
-	void Skill1Pressed();
-	void Skill2Pressed();
-	void Skill3Pressed();
+	void SkillQPressed();
+	void SkillEPressed();
+	void SkillCPressed();
 	void SkillUltiPressed();
 
 	void UseWeaponSurAbility();
@@ -119,6 +119,7 @@ private:
 	void ApplyRecoil(float DeltaTime);
 
 	void SetCharacterType(ECharacterType Type);
+	void CheckUsePassive();
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "FPS", meta = (AllowPrivateAccess = "true"))
