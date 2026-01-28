@@ -101,6 +101,8 @@ void AValorantPlayer::Tick(float DeltaTime)
 	{
 		bMove = false;
 	}
+
+	CheckUsePassive();
 }
 
 // Called to bind functionality to input
@@ -137,9 +139,9 @@ void AValorantPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 	PlayerInputComponent->BindAction(TEXT("DummyBotMaxShiledTrigger"), IE_Pressed, this, &AValorantPlayer::DummyMaxShieldTriggerPressed);
 	PlayerInputComponent->BindAction(TEXT("DummyBotNormalShiledTrigger"), IE_Pressed, this, &AValorantPlayer::DummyNormalShieldTriggerPressed);
 
-	PlayerInputComponent->BindAction(TEXT("Skill1"), IE_Pressed, this, &AValorantPlayer::Skill1Pressed);
-	PlayerInputComponent->BindAction(TEXT("Skill2"), IE_Pressed, this, &AValorantPlayer::Skill2Pressed);
-	PlayerInputComponent->BindAction(TEXT("Skill3"), IE_Pressed, this, &AValorantPlayer::Skill3Pressed);
+	PlayerInputComponent->BindAction(TEXT("SkillQ"), IE_Pressed, this, &AValorantPlayer::SkillQPressed);
+	PlayerInputComponent->BindAction(TEXT("SkillE"), IE_Pressed, this, &AValorantPlayer::SkillEPressed);
+	PlayerInputComponent->BindAction(TEXT("SkillC"), IE_Pressed, this, &AValorantPlayer::SkillCPressed);
 	PlayerInputComponent->BindAction(TEXT("SkillUlti"), IE_Pressed, this, &AValorantPlayer::SkillUltiPressed);
 
 	PlayerInputComponent->BindAction(TEXT("PickJett"), IE_Pressed, this, &AValorantPlayer::SetCharaterTypeToJett);
@@ -301,19 +303,19 @@ void AValorantPlayer::SetCharaterTypeToPhoenix()
 	SetCharacterType(CurrentCharacterType);
 }
 
-void AValorantPlayer::Skill1Pressed()
+void AValorantPlayer::SkillQPressed()
 {
-	SkillComponent->UseSkill1();
+	SkillComponent->UseSkillQ();
 }
 
-void AValorantPlayer::Skill2Pressed()
+void AValorantPlayer::SkillEPressed()
 {
-	SkillComponent->UseSkill2();
+	SkillComponent->UseSkillE();
 }
 
-void AValorantPlayer::Skill3Pressed()
+void AValorantPlayer::SkillCPressed()
 {
-	SkillComponent->UseSkill3();
+	SkillComponent->UseSkillC();
 }
 
 void AValorantPlayer::SkillUltiPressed()
@@ -413,6 +415,18 @@ void AValorantPlayer::SetCharacterType(ECharacterType Type)
 	}
 
 	SkillComponent->RegisterComponent();
+	SkillComponent->SetOwnerPlayer(this);
+}
+
+void AValorantPlayer::CheckUsePassive()
+{
+	if (SkillComponent)
+	{
+		if (SkillComponent->IsHavePassiveSkill())
+		{
+			SkillComponent->UseSkillPassive();
+		}
+	}
 }
 
 void AValorantPlayer::StartReload()

@@ -23,6 +23,16 @@ void USkillComponent::BeginPlay()
 	
 }
 
+void USkillComponent::DontHaveSkill()
+{
+	UE_LOG(LogTemp, Display, TEXT("Don't Have Skill !"));
+}
+
+void USkillComponent::NeedMoreSkill()
+{
+	UE_LOG(LogTemp, Display, TEXT("Need More Ultimate Point !"));
+}
+
 
 // Called every frame
 void USkillComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)

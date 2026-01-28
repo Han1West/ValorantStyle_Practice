@@ -13,10 +13,24 @@ UCLASS()
 class VALORANTSTYLE_API UJettSkillComponent : public USkillComponent
 {
 	GENERATED_BODY()
+protected:
+	// Called when the game starts
+	virtual void BeginPlay() override;
 
 public:
-	virtual void UseSkill1() override;
-	virtual void UseSkill2() override;
-	virtual void UseSkill3() override;
+	// Called every frame
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
+public:
+	virtual void UseSkillQ() override;
+	virtual void UseSkillE() override;
+	virtual void UseSkillC() override;
 	virtual void UseSkillUlti () override;
+	virtual void UseSkillPassive() override;
+
+
+private:
+	bool bTailWind = false;
+
+	float AccTime = 0.f;
 };
