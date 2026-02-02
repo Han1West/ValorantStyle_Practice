@@ -30,9 +30,17 @@ public:
 
 	
 	virtual void UseSkillQ() {};
+	virtual void ReleaseSKillQ() {};	
+
 	virtual void UseSkillE() {};
+	virtual void ReleaseSKillE() {};
+
 	virtual void UseSkillC() {};
+	virtual void ReleaseSKillC() {};
+
 	virtual void UseSkillUlti() {};
+	virtual void ReleaseSKillUlti() {};
+
 	virtual void UseSkillPassive() {};
 
 	void SetOwnerPlayer(AValorantPlayer* Player) { OwnerPlayer = Player; }

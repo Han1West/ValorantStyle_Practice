@@ -34,6 +34,10 @@ AValorantPlayer::AValorantPlayer()
 	ArmsMesh->CastShadow = false;
 
 	SkillComponent = CreateDefaultSubobject<USkillComponent>(TEXT("SkillComp"));
+	JettSkill = CreateDefaultSubobject<UJettSkillComponent>(TEXT("JettSKill"));
+	PhoenixSkill = CreateDefaultSubobject<UPhoenixSkillComponent>(TEXT("PhoenixSkill"));
+
+
 }
 
 // Called when the game starts or when spawned
@@ -78,7 +82,8 @@ void AValorantPlayer::BeginPlay()
 
 	BotSpawner = Cast<ABotSpawner>(UGameplayStatics::GetActorOfClass(GetWorld(), ABotSpawner::StaticClass()));
 
-	SetCharaterTypeToJett();
+
+	GetWorld()->GetTimerManager().SetTimerForNextTick(this, &AValorantPlayer::SetCharaterTypeToJett);
 }
 
 // Called every frame
@@ -140,9 +145,13 @@ void AValorantPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 	PlayerInputComponent->BindAction(TEXT("DummyBotNormalShiledTrigger"), IE_Pressed, this, &AValorantPlayer::DummyNormalShieldTriggerPressed);
 
 	PlayerInputComponent->BindAction(TEXT("SkillQ"), IE_Pressed, this, &AValorantPlayer::SkillQPressed);
+	PlayerInputComponent->BindAction(TEXT("SkillQ"), IE_Released, this, &AValorantPlayer::SkillQReleased);
 	PlayerInputComponent->BindAction(TEXT("SkillE"), IE_Pressed, this, &AValorantPlayer::SkillEPressed);
+	PlayerInputComponent->BindAction(TEXT("SkillE"), IE_Released, this, &AValorantPlayer::SkillEReleased);
 	PlayerInputComponent->BindAction(TEXT("SkillC"), IE_Pressed, this, &AValorantPlayer::SkillCPressed);
+	PlayerInputComponent->BindAction(TEXT("SkillC"), IE_Released, this, &AValorantPlayer::SkillCReleased);
 	PlayerInputComponent->BindAction(TEXT("SkillUlti"), IE_Pressed, this, &AValorantPlayer::SkillUltiPressed);
+	PlayerInputComponent->BindAction(TEXT("SkillUlti"), IE_Released, this, &AValorantPlayer::SkillUltiReleased);
 
 	PlayerInputComponent->BindAction(TEXT("PickJett"), IE_Pressed, this, &AValorantPlayer::SetCharaterTypeToJett);
 	PlayerInputComponent->BindAction(TEXT("PickPhoenix"), IE_Pressed, this, &AValorantPlayer::SetCharaterTypeToPhoenix);
@@ -292,15 +301,13 @@ void AValorantPlayer::ReleaseWeaponSubAbility()
 void AValorantPlayer::SetCharaterTypeToJett()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Characher Changed to Jett !!"));
-	CurrentCharacterType = ECharacterType::Jett;	
-	SetCharacterType(CurrentCharacterType);
+	SetCharacterType(ECharacterType::Jett);
 }
 
 void AValorantPlayer::SetCharaterTypeToPhoenix()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Characher Changed to Phoenix !!"));
-	CurrentCharacterType = ECharacterType::Phoenix;
-	SetCharacterType(CurrentCharacterType);
+	SetCharacterType(ECharacterType::Phoenix);
 }
 
 void AValorantPlayer::SkillQPressed()
@@ -308,9 +315,19 @@ void AValorantPlayer::SkillQPressed()
 	SkillComponent->UseSkillQ();
 }
 
+void AValorantPlayer::SkillQReleased()
+{
+	SkillComponent->ReleaseSKillQ();
+}
+
 void AValorantPlayer::SkillEPressed()
 {
 	SkillComponent->UseSkillE();
+}
+
+void AValorantPlayer::SkillEReleased()
+{
+	SkillComponent->ReleaseSKillE();
 }
 
 void AValorantPlayer::SkillCPressed()
@@ -318,9 +335,19 @@ void AValorantPlayer::SkillCPressed()
 	SkillComponent->UseSkillC();
 }
 
+void AValorantPlayer::SkillCReleased()
+{
+	SkillComponent->ReleaseSKillC();
+}
+
 void AValorantPlayer::SkillUltiPressed()
 {
 	SkillComponent->UseSkillUlti();
+}
+
+void AValorantPlayer::SkillUltiReleased()
+{
+	SkillComponent->ReleaseSKillUlti();
 }
 
 void AValorantPlayer::EquipWeapon(int32 Index)
@@ -395,27 +422,27 @@ void AValorantPlayer::ApplyRecoil(float DeltaTime)
 
 void AValorantPlayer::SetCharacterType(ECharacterType Type)
 {
-	if (SkillComponent)
-	{
-		SkillComponent->DestroyComponent();
-	}
+	CurrentCharacterType = Type;
 
 	switch (Type)
 	{
 	case ECharacterType::Jett:
-		SkillComponent = NewObject<UJettSkillComponent>(this);
+		SkillComponent = JettSkill;
 		break;
 	case ECharacterType::Phoenix:
-		SkillComponent = NewObject<UPhoenixSkillComponent>(this);
+		SkillComponent = PhoenixSkill;
 		break;
 	case ECharacterType::NONE:
+		SkillComponent = nullptr;
 		break;
 	default:
 		break;
 	}
 
-	SkillComponent->RegisterComponent();
-	SkillComponent->SetOwnerPlayer(this);
+	if (SkillComponent)
+	{
+		SkillComponent->SetOwnerPlayer(this);
+	}	
 }
 
 void AValorantPlayer::CheckUsePassive()

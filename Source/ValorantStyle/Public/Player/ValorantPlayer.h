@@ -96,9 +96,13 @@ private:
 	void DummyMaxShieldTriggerPressed();
 
 	void SkillQPressed();
+	void SkillQReleased();
 	void SkillEPressed();
+	void SkillEReleased();
 	void SkillCPressed();
+	void SkillCReleased();
 	void SkillUltiPressed();
+	void SkillUltiReleased();
 
 	void UseWeaponSurAbility();
 	void ReleaseWeaponSurAbility();
@@ -131,6 +135,10 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class USkillComponent* SkillComponent;
 
+	UPROPERTY(VisibleAnywhere)
+	class UJettSkillComponent* JettSkill;
+	UPROPERTY(VisibleAnywhere)
+	class UPhoenixSkillComponent* PhoenixSkill;
 
 	UPROPERTY(EditAnywhere)
 	float Speed = 1.f;
@@ -171,7 +179,6 @@ private:
 	FVector2D LastAppliedRecoil = FVector2D::ZeroVector;
 
 	ECharacterType CurrentCharacterType = ECharacterType::NONE;
-
 private:
 	float OriginMaxSpeed = 0.f;
 	int32 CurrentWeaponIdx = -1;
