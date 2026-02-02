@@ -4,6 +4,31 @@
 #include "Skill/JettSkillComponent.h"
 #include "Player/ValorantPlayer.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Skill/Object/Cloudburst.h"
+#include "GameFramework/ProjectileMovementComponent.h"
+
+UJettSkillComponent::UJettSkillComponent()
+{
+	static ConstructorHelpers::FClassFinder<ACloudburst> CloudburstFinder(TEXT("/Game/BP_Cloudburst"));
+	static ConstructorHelpers::FClassFinder<ABladeStorm> BladestormFinder(TEXT("/Game/BP_Bladestorm"));
+
+
+	if (CloudburstFinder.Succeeded())
+	{
+		CloudburstClass = CloudburstFinder.Class;
+	}
+
+	if (BladestormFinder.Succeeded())
+	{
+		BladestormClass = BladestormFinder.Class;
+		UE_LOG(LogTemp, Warning, TEXT("Load Succeed"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Load Succeed"));
+	}
+
+}
 
 void UJettSkillComponent::BeginPlay()
 {
@@ -11,7 +36,7 @@ void UJettSkillComponent::BeginPlay()
 
 	SkillQCount = 5;
 	SkillECount = 5;
-	SkillCCount = 2;
+	SkillCCount = 5;
 	NeedUltimateCount = 7;
 	CurrentUltimateCount = 0;
 }
@@ -29,6 +54,12 @@ void UJettSkillComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 			SkillECount--;
 		}
 		UE_LOG(LogTemp, Display, TEXT("%f"), AccTime);
+	}
+
+	// C키를 지속적으로 누른상태라면 (한번도 떼지 않고)
+	if (bHoldingC && ControlledCloudburst)
+	{
+		UpdateCloudburstDirection();
 	}
 }
 
@@ -177,9 +208,39 @@ void UJettSkillComponent::UseSkillC()
 		return;
 	}
 
-	SkillCCount--;
+	bHoldingC = true;
 
-	UE_LOG(LogTemp, Display, TEXT("Use Jett Skill C"));
+	APlayerController* PC = Cast<APlayerController>(OwnerPlayer->GetController());
+	if (PC)
+	{
+		FVector CameraLocation;
+		FRotator CameraRotation;
+		PC->GetPlayerViewPoint(CameraLocation, CameraRotation);
+
+
+		FVector FireDirection = CameraRotation.Vector();
+		FireDirection.Normalize();
+
+		FVector Spawnpoint = CameraLocation + (FireDirection * 100.f);
+
+		ControlledCloudburst = GetWorld()->SpawnActor<ACloudburst>(CloudburstClass, Spawnpoint, CameraRotation);
+
+		SkillCCount--;
+
+		UE_LOG(LogTemp, Display, TEXT("Use Jett Skill C"));
+	}
+}
+
+void UJettSkillComponent::ReleaseSKillC()
+{
+	bHoldingC = false;
+
+	// 조종 종료
+	if (ControlledCloudburst)
+	{
+		ControlledCloudburst->FinishControl();
+		ControlledCloudburst = nullptr;
+	}
 }
 
 void UJettSkillComponent::UseSkillUlti()
@@ -191,7 +252,8 @@ void UJettSkillComponent::UseSkillUlti()
 		return;
 	}
 
-	CurrentUltimateCount = 0;
+	APlayerController* PC = Cast<APlayerController>(OwnerPlayer->GetController());
+
 
 
 	UE_LOG(LogTemp, Display, TEXT("Use Jett Skill Ulti"));
@@ -210,15 +272,30 @@ void UJettSkillComponent::UseSkillPassive()
 				{
 					MovementComponent->GravityScale = 0.2f;
 					MovementComponent->AirControl = 1.f;
-					UE_LOG(LogTemp, Display, TEXT("Use Passive"));
 				}
 			}
 			else
 			{
 				MovementComponent->GravityScale = 1.f;
 				MovementComponent->AirControl = 0.05f;
-				UE_LOG(LogTemp, Display, TEXT("do not Use Passive"));
 			}
 		}
+	}
+}
+
+void UJettSkillComponent::UpdateCloudburstDirection()
+{
+	APlayerController* PC = Cast<APlayerController>(OwnerPlayer->GetController());
+
+	if (PC)
+	{
+		FVector CameraLocation;
+		FRotator CameraRotation;
+		PC->GetPlayerViewPoint(CameraLocation, CameraRotation);
+
+		FVector NewDirection = CameraRotation.Vector();
+
+		// 카메라의 방향에따라 위치 업데이트
+		ControlledCloudburst->SetHomingDirection(NewDirection);
 	}
 }
