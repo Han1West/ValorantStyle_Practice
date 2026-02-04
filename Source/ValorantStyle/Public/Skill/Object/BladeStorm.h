@@ -23,6 +23,9 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	void SetAttached(bool Attached) { bAttached = Attached; }
+	void SetInitialRelativeLocation();
+
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class UStaticMeshComponent * BladeMesh;
@@ -30,6 +33,17 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class UProjectileMovementComponent* ProjectileComponent;
 
+	FVector InitialRelativeLocation;
+	float AccTime;
+
+	UPROPERTY(EditAnywhere, Category = "VFX")
+	float ShakeStrength = 0.4f;
+	UPROPERTY(EditAnywhere, Category = "VFX")
+	float ShakeSpeed = 6.f;
+	UPROPERTY(EditAnywhere, Category = "VFX")
+	float RotationShake = 2.f;
 
 	float Damage = 50.f;
+
+	bool bAttached = false;
 };

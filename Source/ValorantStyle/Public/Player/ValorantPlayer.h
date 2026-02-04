@@ -63,12 +63,18 @@ public:
 	UFUNCTION(BlueprintPure)
 	enum EWeaponState GetCurWeaponState() const;
 
+	class UCameraComponent* GetCameraComponent() const { return CameraComp; }
+
+	void SetHideHands(bool Hide) { bHideHands = Hide; }
+	void SetRevealHands(bool Reveal) { bRevealHands = Reveal; }
+	void SetChangeWeaponWhenReveal(bool Change) { bChangeWeaponWhenReveal = Change; }
+	void SetCanSwapWeapon(bool Swap) { bCanSwapWeapon = Swap; }
+
 	bool IsMoving() { return bMove; }
 	bool IsCrouched() { return bCrouch; }
 	bool IsAirborne();
 	// GET SET
 	// 
-
 
 	// With Notify
 	void StartReload();
@@ -112,22 +118,29 @@ private:
 
 	void SetCharaterTypeToJett();
 	void SetCharaterTypeToPhoenix();
+
+	void SpawnBladestorm();
+	void DeSpawnBladeStorm();
+	void HideHands();
+	void RevealHands(bool bChangeWeapon);
 	//
 
 	void EquipWeapon(int32 Index);
 	void TakeReload();		
 
-	void SelectWeapon0() { EquipWeapon(0); }
-	void SelectWeapon1() { EquipWeapon(1); }
+	void SelectWeapon0(); 
+	void SelectWeapon1(); 
 
 	void ApplyRecoil(float DeltaTime);
 
 	void SetCharacterType(ECharacterType Type);
 	void CheckUsePassive();
 
+	FTransform GetBladeTransformForView(int Index);
+
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "FPS", meta = (AllowPrivateAccess = "true"))
-	class UCameraComponent* CameraComp;
+	UCameraComponent* CameraComp;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "FPS", meta = (AllowPrivateAccess = "true"))
 	class USkeletalMeshComponent* ArmsMesh;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "FPS", meta = (AllowPrivateAccess = "true"))
@@ -159,6 +172,11 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	bool bTakeReload = false;
 
+	bool bHideHands = false;
+	bool bRevealHands = false;
+	bool bInvisibleHands = false;
+	bool bCanSwapWeapon = true;
+	bool bChangeWeaponWhenReveal = false;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	TArray<TSubclassOf<ABaseWeapon>> WeaponClasses;
@@ -172,6 +190,7 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Magazine")
 	TSubclassOf<class AMagazine> MagazineClass;
+
 	UPROPERTY()
 	AMagazine* CurrentMagazine;
 
@@ -182,6 +201,7 @@ private:
 private:
 	float OriginMaxSpeed = 0.f;
 	int32 CurrentWeaponIdx = -1;
+	int32 PreviousWeaponIdx = 0;
 
 	class ABotSpawner* BotSpawner = nullptr;
 };

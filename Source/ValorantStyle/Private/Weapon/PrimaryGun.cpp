@@ -35,6 +35,15 @@ void APrimaryGun::BeginPlay()
 void APrimaryGun::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (IsHidden())
+	{
+		CurrentMagazine->SetActorHiddenInGame(true);
+	}
+	else
+	{
+		CurrentMagazine->SetActorHiddenInGame(false);
+	}	
 }
 
 // ÅºÃ¢ Á¦°Å
