@@ -26,6 +26,8 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 public:
+	virtual void CharacterSelected() override;
+
 	virtual void UseSkillQ() override;
 	virtual void UseSkillE() override;
 	virtual void UseSkillC() override;
@@ -34,6 +36,10 @@ public:
 	virtual void UseSkillUlti () override;
 	virtual void UseSkillPassive() override;
 
+	virtual void PressMouseLBTN() override;
+	virtual void PressMouseRBTN() override;
+
+	virtual void CheckPlayerKeyInput(FKey PressedKey) override;
 
 private:
 	bool bTailWind = false;
@@ -44,10 +50,25 @@ private:
 	bool bHoldingC = false;
 
 	float AccTime = 0.f;
+	float ControlledTime = 0.f;
+	float BladeStormFireDelay = 0.2f;
 
+	UPROPERTY()
 	TSubclassOf<ACloudburst> CloudburstClass;
+	UPROPERTY()
 	TSubclassOf<class ABladeStorm> BladestormClass;
+	UPROPERTY()
+	TArray<ABladeStorm*> Bladestorms;
+
+	FTimerHandle FireTimerHandle;
+	
 
 private:
 	void UpdateCloudburstDirection();
+	void FireBladeStormOnce();
+	void FireBladeStormAll();
+
+	FTransform GetBladeTransformForView(int Index);
+	void SpawnBladestorm();
+	void DeSpawnBladeStorm();
 };

@@ -3,6 +3,7 @@
 
 #include "Weapon/BaseWeapon.h"
 #include "Player/ValorantPlayer.h"
+#include "Magazine/Magazine.h"
 
 
 // Sets default values
@@ -76,6 +77,21 @@ void ABaseWeapon::AllAnimEndReload()
 EWeaponState ABaseWeapon::GetCurWeaponState() const
 {
 	return WeaponState;
+}
+
+void ABaseWeapon::SetWeaponHidden(bool Hidden)
+{
+	if (IsHidden() == Hidden)
+	{
+		return;
+	}
+
+	SetActorHiddenInGame(Hidden);
+
+	if (CurrentMagazine)
+	{
+		CurrentMagazine->SetActorHiddenInGame(Hidden);
+	}
 }
 
 bool ABaseWeapon::CanReload() const

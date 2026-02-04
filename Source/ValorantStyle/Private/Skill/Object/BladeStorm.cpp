@@ -16,13 +16,15 @@ ABladeStorm::ABladeStorm()
 
 	ProjectileComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileComponent"));
 	ProjectileComponent->UpdatedComponent = BladeMesh;
+	
+
+	SetActorScale3D(FVector(0.1f, 0.1f, 0.1f));
 }
 
 // Called when the game starts or when spawned
 void ABladeStorm::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 // Called every frame
@@ -30,5 +32,21 @@ void ABladeStorm::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (bAttached)
+	{
+		AccTime += DeltaTime;
+
+		FVector Shake;
+		Shake.X = FMath::Sin(AccTime * ShakeSpeed) * ShakeStrength;
+		Shake.Y = FMath::Cos(AccTime * ShakeSpeed * 1.3f) * ShakeStrength;
+		Shake.Z = FMath::Sin(AccTime * ShakeSpeed * 0.7f) * ShakeStrength;
+
+		BladeMesh->SetRelativeLocation(InitialRelativeLocation + Shake);
+	}
+}
+
+void ABladeStorm::SetInitialRelativeLocation()
+{
+	InitialRelativeLocation = BladeMesh->GetRelativeLocation();
 }
 

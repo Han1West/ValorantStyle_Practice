@@ -50,6 +50,8 @@ public:
 
 	float SpreadRecoverSpeed = 30.f;
 
+	void SetWeaponHidden(bool Hidden);
+
 private:
 	UPROPERTY(VisibleAnywhere)
 	USceneComponent* Root;
