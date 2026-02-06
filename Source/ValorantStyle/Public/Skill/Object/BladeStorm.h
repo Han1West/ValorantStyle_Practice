@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "BladeStorm.generated.h"
 
+class AValorantPlayer;
 UCLASS()
 class VALORANTSTYLE_API ABladeStorm : public AActor
 {
@@ -25,8 +26,19 @@ public:
 
 	void SetAttached(bool Attached) { bAttached = Attached; }
 	void SetInitialRelativeLocation();
+	void SetProjectile(const FVector& FireDirection, const FRotator& Rotation);
+	void SetAttachedOwnerPlayer(AValorantPlayer* Player) { AttachedOwnerPlayer = Player; }
+	void SetSpanwed(bool Spawn) { bSpawned = Spawn; }
+	void SetSingleFired(bool Single) { bSingleFired = Single; }
+
+	bool IsSpawned() { return bSpawned; }
+public:
+	void NotifyKill(AActor* Victim);
 
 private:
+	UPROPERTY()
+	AValorantPlayer* AttachedOwnerPlayer = nullptr;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class UStaticMeshComponent * BladeMesh;
 
@@ -46,4 +58,10 @@ private:
 	float Damage = 50.f;
 
 	bool bAttached = false;
+	bool bSpawned = false;
+	bool bSingleFired = false;
+
+private:
+	UFUNCTION()
+	void OnBladeHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 };

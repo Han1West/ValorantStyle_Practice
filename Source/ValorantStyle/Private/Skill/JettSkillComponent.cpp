@@ -40,7 +40,7 @@ void UJettSkillComponent::BeginPlay()
 
 	SkillQCastingTime = 1.f;
 	SkillECastingTime = 1.f;
-	SkillCCastingTime = 0.1f;
+	SkillCCastingTime = 0.4f;
 }
 
 void UJettSkillComponent::CharacterSelected()
@@ -54,9 +54,9 @@ void UJettSkillComponent::CharacterSelected()
 		FTransform NewTransform = GetBladeTransformForView(i);
 		NewTransform.SetScale3D(NewBladestorm->GetActorScale3D());
 		NewBladestorm->SetActorTransform(NewTransform);
-		NewBladestorm->SetActorRelativeRotation(FRotator(200.f, 0.f, 180.f));
+		NewBladestorm->SetActorRotation(FRotator(-20.f, 180.f, 0.f));
 		NewBladestorm->SetInitialRelativeLocation();
-
+		NewBladestorm->SetAttachedOwnerPlayer(OwnerPlayer);
 		NewBladestorm->SetActorHiddenInGame(true);
 		NewBladestorm->SetActorEnableCollision(false);
 		NewBladestorm->SetAttached(true);
@@ -88,38 +88,66 @@ void UJettSkillComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 		UpdateCloudburstDirection();
 	}
 
-	if (bSkillQCasting)
+	if (bSkillQInput)
 	{
-		StartPermitTimer(bSkillQCasting);
-		bSkillQCasting = false;
+		// 해당 스킬의 캐스팅 시간 소모
+		OwnerPlayer->GetWorldTimerManager().SetTimer(CastingQHandle, this, &USkillComponent::CastingEndQSkil, SkillQCastingTime, false);
+		bSkillQInput = false;
+
+		if (bSkillUltiCasting)
+		{
+			DeSpawnBladeStorm();
+			bWasUsingUlti = true;
+		}
+	}
+	if (bSkillEInput)
+	{
+		// 해당 스킬의 캐스팅 시간 소모
+		OwnerPlayer->GetWorldTimerManager().SetTimer(CastingEHandle, this, &USkillComponent::CastingEndESkil, SkillECastingTime, false);
+		bSkillEInput = false;
+
+		if (bSkillUltiCasting)
+		{
+			DeSpawnBladeStorm();
+			bWasUsingUlti = true;
+		}
 	}
 
-	if (bSkillECasting)
-	{
-		StartPermitTimer(bSkillECasting);
-		bSkillECasting = false;
-	}
-
-	if (bSkillCCasting)
-	{
+	if (bSkillCInput)
+	{	
+		if (bSkillUltiCasting)
+		{
+			DeSpawnBladeStorm();
+			bWasUsingUlti = true;
+		}
 		if (!bHoldingC && !ControlledCloudburst)
 		{
-			StartPermitTimer(bSkillCCasting);
-			bSkillCCasting = false;
+			OwnerPlayer->GetWorldTimerManager().SetTimer(CastingCHandle, this, &USkillComponent::CastingEndCSkil, SkillCCastingTime, false);
+			bSkillCInput = false;
 		}
+	}
+
+	// 모든 스킬 사용이 끝나고 궁극기 사용중이였다면
+	if (!bUsingSkill && bWasUsingUlti)
+	{
+		RespawnBladestormAfterUsingSkill();
+	}
+	else if (!bUsingSkill && bDeactivatedPlayerHands && !bSkillUltiCasting)
+	{
+		PermitPlayerSwap();
 	}
 }
 
 
 void UJettSkillComponent::UseSkillQ()
-{	
+{
 	// 스킬이 남아있지 않으면 사용 불가
 	if (SkillQCount <= 0)
 	{
 		DontHaveSkill();
 		return;
 	}
-	
+
 	APlayerController* PC = Cast<APlayerController>(OwnerPlayer->GetController());
 	if (PC)
 	{
@@ -143,16 +171,18 @@ void UJettSkillComponent::UseSkillQ()
 					if (MovementComponent)
 					{
 						MovementComponent->AirControl = 0.05f;
-					}					
+					}
 				}, 0.3f, false);
 
 		}
 
-		ProhibitPlayerSwap();		
+		ProhibitPlayerSwap();
+		bSkillQInput = true;
 		bSkillQCasting = true;
+		bUsingSkill = true;
 		SkillQCount--;
 	}
-	
+
 
 	UE_LOG(LogTemp, Display, TEXT("Use Jett Skill Q"));
 }
@@ -209,7 +239,7 @@ void UJettSkillComponent::UseSkillE()
 			{
 				DashDirection -= RightDirection;
 			}
-			if(DashDirection == FVector::ZeroVector)
+			if (DashDirection == FVector::ZeroVector)
 			{
 				// 아무런 키도 없다면 전방으로
 				DashDirection += ForwardDirection;
@@ -218,7 +248,7 @@ void UJettSkillComponent::UseSkillE()
 			if (!DashDirection.IsNearlyZero())
 			{
 				DashDirection.Normalize();
-				
+
 				float DashSpeed = 4000.f;
 
 				// 캐릭터에게 즉각적인 속도 부여
@@ -235,7 +265,7 @@ void UJettSkillComponent::UseSkillE()
 							if (MovementComponent && OwnerPlayer)
 							{
 								FVector CuurentVelocity = MovementComponent->Velocity;
-								
+
 								CuurentVelocity.X *= 0.2f;
 								CuurentVelocity.Y *= 0.2f;
 
@@ -247,10 +277,12 @@ void UJettSkillComponent::UseSkillE()
 		}
 
 		ProhibitPlayerSwap();
+		bSkillEInput = true;
 		bSkillECasting = true;
+		bUsingSkill = true;
 		SkillECount--;
 		UE_LOG(LogTemp, Display, TEXT("Use Jett Skill E"));
-	}	
+	}
 }
 
 void UJettSkillComponent::UseSkillC()
@@ -279,7 +311,9 @@ void UJettSkillComponent::UseSkillC()
 		ControlledCloudburst = GetWorld()->SpawnActor<ACloudburst>(CloudburstClass, Spawnpoint, CameraRotation);
 
 		ProhibitPlayerSwap();
+		bSkillCInput = true;
 		bSkillCCasting = true;
+		bUsingSkill = true;
 		SkillCCount--;
 
 		UE_LOG(LogTemp, Display, TEXT("Use Jett Skill C"));
@@ -300,11 +334,21 @@ void UJettSkillComponent::ReleaseSKillC()
 	// 기존 캐스팅 시간 이상 조종했다면
 	if (ControlledTime > SkillCCastingTime)
 	{
-		PermitPlayerSwap();
+		// 이전 상태가 궁극기 사용중 이였음 (칼날폭풍 활성화)
+		if (bWasUsingUlti)
+		{
+			RespawnBladestormAfterUsingSkill();
+		}
+		// 일반 무기
+		else
+		{
+			PermitPlayerSwap();
+		}
+
 		bSkillCCasting = false;
 		UE_LOG(LogTemp, Display, TEXT("Permit Swap with Rlease Key"));
 	}
-	
+
 	ControlledTime = 0.f;
 }
 
@@ -313,13 +357,22 @@ void UJettSkillComponent::UseSkillUlti()
 	// 궁극기 포인트가 부족하면 사용 불가
 	if (CurrentUltimateCount < NeedUltimateCount)
 	{
-		NeedMoreSkill();
+		// 아직 다 안쓴 칼날폭풍이 있다면
+		if (ActivatedBladestormsCount > 0)
+		{
+			OwnerPlayer->RequestHideHands(true);
+			SpawnBladestorm();
+		}
+		else
+		{
+			NeedMoreSkill();
+		}
 		return;
 	}
 
-	OwnerPlayer->SetHideHands(true);
-	bSkillUltiCasting = true;
-	SpawnBladestorm();
+	OwnerPlayer->RequestHideHands(true);
+	CurrentUltimateCount = 0;
+	InitialSpawnBladestorm();
 
 	UE_LOG(LogTemp, Display, TEXT("Use Jett Skill Ulti"));
 }
@@ -332,7 +385,7 @@ void UJettSkillComponent::UseSkillPassive()
 		if (UCharacterMovementComponent* MovementComponent = OwnerPlayer->GetCharacterMovement())
 		{
 			if (PC->IsInputKeyDown(EKeys::SpaceBar))
-	{
+			{
 				if (MovementComponent->IsFalling() && MovementComponent->Velocity.Z < 0.f)
 				{
 					MovementComponent->GravityScale = 0.2f;
@@ -351,19 +404,35 @@ void UJettSkillComponent::UseSkillPassive()
 void UJettSkillComponent::PressMouseLBTN()
 {
 	// 플레이어가 칼날폭풍을 장착 중
-	//if (OwnerPlayer->IsHasBladestorm())
-	//{
-	//	// 새로운 칼날 폭풍 소환 후 발사
-	//	//GetWorld()->GetTimerManager().SetTimer(FireTimerHandle, this, &UJettSkillComponent::FireBladeStormOnce, BladeStormFireDelay, true);
-	//}
+	if (bSkillUltiCasting)
+	{
+		if (GetWorld()->GetTimerManager().IsTimerActive(FireTimerHandle))
+		{
+			return;
+		}
+
+		FireBladeStormOnce();
+
+		// 새로운 칼날 폭풍 소환 후 발사
+		GetWorld()->GetTimerManager().SetTimer(FireTimerHandle, this, &UJettSkillComponent::FireBladeStormOnce, BladeStormFireDelay, true);
+	}
 }
 
 void UJettSkillComponent::PressMouseRBTN()
 {
-	//if (OwnerPlayer->IsHasBladestorm())
-	//{
-	//	FireBladeStormAll();
-	//}
+	if (bSkillUltiCasting)
+	{
+		FireBladeStormAll();
+	}
+}
+
+void UJettSkillComponent::ReleaseMouseLBTN()
+{
+	GetWorld()->GetTimerManager().ClearTimer(FireTimerHandle);
+}
+
+void UJettSkillComponent::ReleaseMouseRBTN()
+{
 }
 
 void UJettSkillComponent::CheckPlayerKeyInput(FKey PressedKey)
@@ -371,13 +440,27 @@ void UJettSkillComponent::CheckPlayerKeyInput(FKey PressedKey)
 	if (!bSkillUltiCasting)
 		return;
 
-	if (PressedKey == EKeys::One || PressedKey == EKeys::Two)
+	if (PressedKey == EKeys::One)
 	{
 		DeSpawnBladeStorm();
 		bSkillUltiCasting = false;
-		OwnerPlayer->SetRevealHands(true);
-		OwnerPlayer->SetChangeWeaponWhenReveal(true);
+		OwnerPlayer->SetTemporaryWeaponIdx(0);
+		OwnerPlayer->RequestRevealHands(true);
+		bDeactivatedPlayerHands = false;		
 	}
+	else if (PressedKey == EKeys::Two)
+	{
+		DeSpawnBladeStorm();
+		bSkillUltiCasting = false;
+		OwnerPlayer->SetTemporaryWeaponIdx(1);
+		OwnerPlayer->RequestRevealHands(true);
+		bDeactivatedPlayerHands = false;
+	}
+}
+
+void UJettSkillComponent::OnBladeKillSuccess()
+{
+	InitialSpawnBladestorm();
 }
 
 void UJettSkillComponent::UpdateCloudburstDirection()
@@ -399,6 +482,12 @@ void UJettSkillComponent::UpdateCloudburstDirection()
 
 void UJettSkillComponent::FireBladeStormOnce()
 {
+	if (ActivatedBladestormsCount <= 0)
+	{
+		GetWorld()->GetTimerManager().ClearTimer(FireTimerHandle);
+		return;
+	}
+
 	APlayerController* PC = Cast<APlayerController>(OwnerPlayer->GetController());
 	if (PC)
 	{
@@ -410,13 +499,66 @@ void UJettSkillComponent::FireBladeStormOnce()
 		FireDirection.Normalize();
 
 		FVector Spawnpoint = CameraLocation + (FireDirection * 100.f);
-		GetWorld()->SpawnActor<ACloudburst>(CloudburstClass, Spawnpoint, CameraRotation);
+		FRotator NewRotation = CameraRotation;
+		NewRotation.Pitch += 200.f;
+		NewRotation.Roll += 180.f;
 
+		// 칼날 폭풍을 발사한 액터 설정
+		SpawnProjectileBladestorm(FireDirection, Spawnpoint, NewRotation, true);
 	}
 }
 
 void UJettSkillComponent::FireBladeStormAll()
 {
+	APlayerController* PC = Cast<APlayerController>(OwnerPlayer->GetController());
+	if (PC)
+	{
+		FVector CameraLocation;
+		FRotator CameraRotation;
+		PC->GetPlayerViewPoint(CameraLocation, CameraRotation);
+
+		FVector FireDirection = CameraRotation.Vector();
+		FireDirection.Normalize();
+
+		FRotator NewRotation = CameraRotation;
+		NewRotation.Pitch += 200.f;
+		NewRotation.Roll += 180.f;
+
+		float SpreadYaw = 0.25f;
+		float SpreadPitch = 0.75f;
+
+		int Count = ActivatedBladestormsCount;
+
+		for (int i = 0; i < Count; ++i)
+		{
+			float IndexOffset = i - (Count - 1) * 0.5;
+
+			FRotator Rot = CameraRotation;
+			Rot.Yaw += IndexOffset * SpreadYaw;
+			Rot.Pitch += FMath::RandRange(-SpreadPitch, SpreadPitch);
+
+			FVector Dir = Rot.Vector();
+			FVector SpawnPoint = CameraLocation + Dir * 100.f;
+
+			SpawnProjectileBladestorm(Dir, SpawnPoint, NewRotation, false);
+		}
+	}
+}
+
+void UJettSkillComponent::SpawnProjectileBladestorm(const FVector& FireDirection, const FVector& SpawnLocation, const FRotator& SpanwRotation, bool SingleFire)
+{
+	// 칼날 폭풍을 발사한 액터 설정
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = OwnerPlayer;
+	SpawnParams.Instigator = OwnerPlayer->GetInstigator();
+
+	ABladeStorm* NewBladestorm = GetWorld()->SpawnActor<ABladeStorm>(BladestormClass, SpawnLocation, SpanwRotation, SpawnParams);	
+	DeSpawnOneBladeStorm();
+
+	NewBladestorm->SetOwner(OwnerPlayer);	
+	NewBladestorm->SetAttached(false);
+	NewBladestorm->SetProjectile(FireDirection, SpanwRotation);
+	NewBladestorm->SetSingleFired(SingleFire);
 }
 
 
@@ -441,19 +583,19 @@ FTransform UJettSkillComponent::GetBladeTransformForView(int Index)
 	switch (Index)
 	{
 	case 0:
-		Offset = Forward * 55 + Right * 35 + Up * 80;
-		break;
-	case 1:
-		Offset = Forward * 55 + Right * -35 + Up * 80;
-		break;
-	case 2:
-		Offset = Forward * 50 + Right * 0 + Up * 70;
-		break;
-	case 3:
 		Offset = Forward * 55 + Right * 50 + Up * 90;
 		break;
-	case 4:
+	case 1:
 		Offset = Forward * 55 + Right * -50 + Up * 90;
+		break;
+	case 2:
+		Offset = Forward * 55 + Right * 35 + Up * 80;
+		break;
+	case 3:
+		Offset = Forward * 55 + Right * -35 + Up * 80;
+		break;
+	case 4:
+		Offset = Forward * 50 + Right * 0 + Up * 70;
 		break;
 	}
 
@@ -462,12 +604,43 @@ FTransform UJettSkillComponent::GetBladeTransformForView(int Index)
 	return Result;
 }
 
-void UJettSkillComponent::SpawnBladestorm()
+void UJettSkillComponent::InitialSpawnBladestorm()
 {
 	for (int i = 0; i < Bladestorms.Num(); ++i)
 	{
 		Bladestorms[i]->SetActorHiddenInGame(false);
+		Bladestorms[i]->SetSpanwed(true);
 	}
+	ActivatedBladestormsCount = 5;
+	bSkillUltiCasting = true;
+}
+
+void UJettSkillComponent::SpawnBladestorm()
+{
+	for (int i = 0; i < Bladestorms.Num(); ++i)
+	{
+		if (Bladestorms[i]->IsSpawned())
+		{
+			Bladestorms[i]->SetActorHiddenInGame(false);
+		}
+	}
+	bSkillUltiCasting = true;
+}
+
+void UJettSkillComponent::RespawnBladestormAfterUsingSkill()
+{
+	for (int i = 0; i < Bladestorms.Num(); ++i)
+	{
+		if (Bladestorms[i]->IsSpawned())
+		{
+			Bladestorms[i]->SetActorHiddenInGame(false);
+		}
+	}
+	bSkillUltiCasting = true;
+	bWasUsingUlti = false;
+	OwnerPlayer->SetCanSwapWeapon(true);
+
+	UE_LOG(LogTemp, Display, TEXT("Respawned Bladestrom !!!!!"));
 }
 
 void UJettSkillComponent::DeSpawnBladeStorm()
@@ -476,4 +649,34 @@ void UJettSkillComponent::DeSpawnBladeStorm()
 	{
 		Bladestorms[i]->SetActorHiddenInGame(true);
 	}
+	bSkillUltiCasting = false;
+
+	UE_LOG(LogTemp, Display, TEXT("Despawned Bladestorm !!"));
+}
+
+void UJettSkillComponent::DeSpawnOneBladeStorm()
+{
+	for (int i = 0; i < Bladestorms.Num(); ++i)
+	{
+		if (!Bladestorms[i]->IsHidden())
+		{
+			// 한개의 칼날폭풍을 비활성화 했다면 return
+			Bladestorms[i]->SetActorHiddenInGame(true);
+			Bladestorms[i]->SetSpanwed(false);
+			ActivatedBladestormsCount--;
+			if (ActivatedBladestormsCount <= 0)
+			{
+				ActivatedBladestormsCount = 0;
+				EndSkillUlti();				
+			}
+			return;
+		}
+	}
+}
+
+void UJettSkillComponent::EndSkillUlti()
+{
+	bSkillUltiCasting = false;
+	OwnerPlayer->RequestRevealHands(true);
+	bDeactivatedPlayerHands = false;
 }

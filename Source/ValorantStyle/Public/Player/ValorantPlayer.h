@@ -65,10 +65,12 @@ public:
 
 	class UCameraComponent* GetCameraComponent() const { return CameraComp; }
 
-	void SetHideHands(bool Hide) { bHideHands = Hide; }
-	void SetRevealHands(bool Reveal) { bRevealHands = Reveal; }
-	void SetChangeWeaponWhenReveal(bool Change) { bChangeWeaponWhenReveal = Change; }
+	class USkillComponent* GetSkillComponent() const { return SkillComponent; }
+
+	void RequestHideHands(bool ChangeWeapon);
+	void RequestRevealHands(bool ChangeWeapon); 
 	void SetCanSwapWeapon(bool Swap) { bCanSwapWeapon = Swap; }
+	void SetTemporaryWeaponIdx(int32 Idx) { TemporaryWeaponIdx = Idx; }
 
 	bool IsMoving() { return bMove; }
 	bool IsCrouched() { return bCrouch; }
@@ -121,7 +123,7 @@ private:
 
 	void SpawnBladestorm();
 	void DeSpawnBladeStorm();
-	void HideHands();
+	void HideHands(bool bChgangeWeapon);
 	void RevealHands(bool bChangeWeapon);
 	//
 
@@ -146,7 +148,7 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "FPS", meta = (AllowPrivateAccess = "true"))
 	class USceneComponent* FPView;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	class USkillComponent* SkillComponent;
+	USkillComponent* SkillComponent;
 
 	UPROPERTY(VisibleAnywhere)
 	class UJettSkillComponent* JettSkill;
@@ -176,7 +178,7 @@ private:
 	bool bRevealHands = false;
 	bool bInvisibleHands = false;
 	bool bCanSwapWeapon = true;
-	bool bChangeWeaponWhenReveal = false;
+	bool bChangeWeaponWhenHideOrReveal = false;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	TArray<TSubclassOf<ABaseWeapon>> WeaponClasses;
@@ -201,7 +203,7 @@ private:
 private:
 	float OriginMaxSpeed = 0.f;
 	int32 CurrentWeaponIdx = -1;
-	int32 PreviousWeaponIdx = 0;
+	int32 TemporaryWeaponIdx = 0;
 
 	class ABotSpawner* BotSpawner = nullptr;
 };

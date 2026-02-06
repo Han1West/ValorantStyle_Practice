@@ -38,8 +38,12 @@ public:
 
 	virtual void PressMouseLBTN() override;
 	virtual void PressMouseRBTN() override;
+	virtual void ReleaseMouseLBTN() override;
+	virtual void ReleaseMouseRBTN() override;
 
 	virtual void CheckPlayerKeyInput(FKey PressedKey) override;
+
+	void OnBladeKillSuccess();
 
 private:
 	bool bTailWind = false;
@@ -48,6 +52,7 @@ private:
 	class ACloudburst* ControlledCloudburst = nullptr;
 
 	bool bHoldingC = false;
+	bool bWasUsingUlti = false;
 
 	float AccTime = 0.f;
 	float ControlledTime = 0.f;
@@ -61,14 +66,21 @@ private:
 	TArray<ABladeStorm*> Bladestorms;
 
 	FTimerHandle FireTimerHandle;
-	
+	int32 ActivatedBladestormsCount = 0;
 
 private:
 	void UpdateCloudburstDirection();
 	void FireBladeStormOnce();
 	void FireBladeStormAll();
+	void SpawnProjectileBladestorm(const FVector& FireDirection, const FVector& SpawnLocation, const FRotator& SpanwRotation, bool SingleFire);
 
 	FTransform GetBladeTransformForView(int Index);
+	void InitialSpawnBladestorm();
 	void SpawnBladestorm();
+	void RespawnBladestormAfterUsingSkill();
 	void DeSpawnBladeStorm();
+	void DeSpawnOneBladeStorm();
+
+protected:
+	virtual void EndSkillUlti() override;
 };
