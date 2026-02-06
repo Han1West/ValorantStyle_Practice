@@ -3,6 +3,8 @@
 
 #include "Bot/DummyBot.h"
 #include "Bot/BotSpawner.h"
+#include "Skill/Object/BladeStorm.h"
+
 #include "Components/CapsuleComponent.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -66,6 +68,15 @@ float ADummyBot::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
 	if (IsDead())
 	{
 		DummyDeathProcess();
+
+		if (ABladeStorm* Blade = Cast<ABladeStorm>(DamageCauser))
+		{
+			Blade->NotifyKill(this);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("Failed Cast TO Baldestorm"));
+		}
 	}
 
 	return TotalDamageToApplied;
@@ -75,13 +86,13 @@ void ADummyBot::InitBoneMap()
 {
 	BoneToPartMap.Add("head", EHitPart::Head);
 
-	BoneToPartMap.Add("upperarm_l", EHitPart::ArmLeg);
-	BoneToPartMap.Add("lowerarm_l", EHitPart::ArmLeg);
-	BoneToPartMap.Add("hand_l", EHitPart::ArmLeg);
+	//BoneToPartMap.Add("upperarm_l", EHitPart::ArmLeg);
+	//BoneToPartMap.Add("lowerarm_l", EHitPart::ArmLeg);
+	//BoneToPartMap.Add("hand_l", EHitPart::ArmLeg);
 
-	BoneToPartMap.Add("upperarm_r", EHitPart::ArmLeg);
-	BoneToPartMap.Add("lowerarm_r", EHitPart::ArmLeg);
-	BoneToPartMap.Add("hand_R", EHitPart::ArmLeg);
+	//BoneToPartMap.Add("upperarm_r", EHitPart::ArmLeg);
+	//BoneToPartMap.Add("lowerarm_r", EHitPart::ArmLeg);
+	//BoneToPartMap.Add("hand_R", EHitPart::ArmLeg);
 
 	BoneToPartMap.Add("thigh_l", EHitPart::ArmLeg);
 	BoneToPartMap.Add("calf_l", EHitPart::ArmLeg);

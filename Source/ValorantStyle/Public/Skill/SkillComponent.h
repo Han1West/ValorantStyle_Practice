@@ -44,6 +44,8 @@ public:
 
 	virtual void PressMouseLBTN() {};
 	virtual void PressMouseRBTN() {};
+	virtual void ReleaseMouseLBTN() {};
+	virtual void ReleaseMouseRBTN() {};
 
 	virtual void CheckPlayerKeyInput(FKey PressedKey) {};
 
@@ -51,6 +53,7 @@ public:
 	bool IsHavePassiveSkill() { return bPassive; }
 
 protected:
+	UPROPERTY()
 	AValorantPlayer* OwnerPlayer = nullptr;
 
 	bool bPassive = false;
@@ -66,12 +69,25 @@ protected:
 	float SkillCCastingTime = 0.f;
 	float SkillUltiCastingTime = 0.f;
 
+	bool bSkillQInput = false;
 	bool bSkillQCasting = false;
+
+	bool bSkillEInput = false;
 	bool bSkillECasting = false;
+	
+	bool bSkillCInput = false;
 	bool bSkillCCasting = false;
+
+	bool bSkillUltiInput = false;
 	bool bSkillUltiCasting = false;
 
-	FTimerHandle CastingTimerHandle;
+	bool bUsingSkill = false;
+	bool bDeactivatedPlayerHands = false;
+
+	FTimerHandle CastingQHandle;
+	FTimerHandle CastingEHandle;
+	FTimerHandle CastingCHandle;
+	FTimerHandle CastingUltiHandle;
 
 protected:
 	void DontHaveSkill();
@@ -79,7 +95,16 @@ protected:
 
 	void ProhibitPlayerSwap();
 	void PermitPlayerSwap();	
+	void OffUsingSkill();
+
+	virtual void EndSKillQ() {};
+	virtual void EndSKillE() {};
+	virtual void EndSKillC() {};
+	virtual void EndSkillUlti() {};
 
 public:
-	void StartPermitTimer(float Time);
+	void CastingEndQSkil();
+	void CastingEndESkil();
+	void CastingEndCSkil();
+	void CastingEndUltiSkil();
 };

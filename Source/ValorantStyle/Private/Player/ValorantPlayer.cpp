@@ -17,7 +17,7 @@
 // Sets default values
 AValorantPlayer::AValorantPlayer()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComp"));
@@ -25,7 +25,7 @@ AValorantPlayer::AValorantPlayer()
 	CameraComp->bUsePawnControlRotation = true;
 
 	FPView = CreateDefaultSubobject<USceneComponent>(TEXT("FPView"));
-	FPView->SetupAttachment(CameraComp);	
+	FPView->SetupAttachment(CameraComp);
 
 	ArmsMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("ArmsMesh"));
 	ArmsMesh->SetupAttachment(FPView);
@@ -63,13 +63,13 @@ void AValorantPlayer::BeginPlay()
 
 		Weapons.Add(NewWeapon);
 	}
-	
+
 	CurrentMagazine = GetWorld()->SpawnActor<AMagazine>(MagazineClass);
 	CurrentMagazine->AttachToComponent(ArmsMesh, FAttachmentTransformRules::KeepRelativeTransform, TEXT("Magazine_Socket"));
 	CurrentMagazine->SetActorHiddenInGame(true);
 
 	EquipWeapon(1);
-	
+
 	GetCharacterMovement()->MaxWalkSpeed = 500.f;
 	OriginMaxSpeed = GetCharacterMovement()->MaxWalkSpeed;
 	GetCharacterMovement()->MaxWalkSpeedCrouched = 200.f;
@@ -89,9 +89,9 @@ void AValorantPlayer::BeginPlay()
 void AValorantPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	
+
 	// 현재 플레이어의 상태에 따라 Speed값을 갱신한다.
-	AdjustSpeed(); 
+	AdjustSpeed();
 
 	// 반동 카메라 적용
 	ApplyRecoil(DeltaTime);
@@ -110,9 +110,9 @@ void AValorantPlayer::Tick(float DeltaTime)
 	{
 		if (!bInvisibleHands)
 		{
-			HideHands();
+			HideHands(bChangeWeaponWhenHideOrReveal);
 		}
-		
+
 		bHideHands = false;
 	}
 
@@ -120,8 +120,8 @@ void AValorantPlayer::Tick(float DeltaTime)
 	{
 		if (bInvisibleHands)
 		{
-			RevealHands(bChangeWeaponWhenReveal);
-		}		
+			RevealHands(bChangeWeaponWhenHideOrReveal);
+		}
 		bRevealHands = false;
 	}
 
@@ -134,8 +134,8 @@ void AValorantPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	PlayerInputComponent->BindAxis(TEXT("MoveFoward"), this, & AValorantPlayer::MoveFoward);
-	PlayerInputComponent->BindAxis(TEXT("MoveRight"), this, & AValorantPlayer::MoveRight);
+	PlayerInputComponent->BindAxis(TEXT("MoveFoward"), this, &AValorantPlayer::MoveFoward);
+	PlayerInputComponent->BindAxis(TEXT("MoveRight"), this, &AValorantPlayer::MoveRight);
 
 	PlayerInputComponent->BindAxis(TEXT("LookUp"), this, &AValorantPlayer::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis(TEXT("LookRight"), this, &AValorantPlayer::AddControllerYawInput);
@@ -230,7 +230,7 @@ void AValorantPlayer::JumpPressed()
 
 void AValorantPlayer::WalkPressed()
 {
-	bWalk = true;	
+	bWalk = true;
 }
 
 void AValorantPlayer::WalkReleased()
@@ -252,21 +252,28 @@ void AValorantPlayer::CrouchReleased()
 
 void AValorantPlayer::InspectPressed()
 {
+	if (!CurrentWeapon || CurrentWeapon->IsHidden())
+	{
+		return;
+	}
+
 	bInspectWeapon = false;
 
 	// 공격중에는 조사 bool값이 켜지지 않게 해준다. ( 주무기, 보조무기는 Inspect 모션이 없으므로 제외 )
 	if (!bSubWeapon && !bSurWeapon && CurrentWeaponIdx == 1)
 	{
 		bInspectWeapon = true;
-	}	
+	}
 }
 
 void AValorantPlayer::ReloadPressed()
 {
-	if (CurrentWeapon)
+	if (!CurrentWeapon || CurrentWeapon->IsHidden())
 	{
-		bTakeReload = CurrentWeapon->TryReload();
+		return;
 	}
+
+	bTakeReload = CurrentWeapon->TryReload();
 
 	if (bTakeReload)
 	{
@@ -287,35 +294,55 @@ void AValorantPlayer::DummyNormalShieldTriggerPressed()
 }
 
 void AValorantPlayer::UseWeaponSurAbility()
-{		
-	SkillComponent->PressMouseLBTN();
+{
+	if (SkillComponent)
+	{
+		SkillComponent->PressMouseLBTN();
+	}
+	if (!CurrentWeapon || CurrentWeapon->IsHidden())
+	{
+		return;
+	}
 	bInspectWeapon = false;
 	bSurWeapon = true;
-	if (CurrentWeapon)
-	{
-		
-		CurrentWeapon->SetPullTrigger(true);
-	}
+	CurrentWeapon->SetPullTrigger(true);
 }
 
 void AValorantPlayer::ReleaseWeaponSurAbility()
-{	
+{
+	if (SkillComponent)
+	{
+		SkillComponent->ReleaseMouseLBTN();
+	}
+
 	bSurWeapon = false;
 	if (CurrentWeapon)
-	{		
+	{
 		CurrentWeapon->SetPullTrigger(false);
 	}
 }
 
 void AValorantPlayer::UseWeaponSubAbility()
-{	
-	SkillComponent->PressMouseRBTN();
+{
+	if (SkillComponent)
+	{
+		SkillComponent->PressMouseRBTN();
+	}
+
+	if (!CurrentWeapon || CurrentWeapon->IsHidden())
+	{
+		return;
+	}
 	bInspectWeapon = false;
-	bSubWeapon = true;	
+	bSubWeapon = true;
 }
 
 void AValorantPlayer::ReleaseWeaponSubAbility()
 {
+	if (SkillComponent)
+	{
+		SkillComponent->ReleaseMouseRBTN();
+	}
 	bSubWeapon = false;
 }
 
@@ -331,7 +358,7 @@ void AValorantPlayer::SetCharaterTypeToPhoenix()
 	SetCharacterType(ECharacterType::Phoenix);
 }
 
-void AValorantPlayer::HideHands()
+void AValorantPlayer::HideHands(bool bChgangeWeapon)
 {
 	bInvisibleHands = true;
 	if (!ArmsMesh || !CurrentWeapon)
@@ -342,15 +369,23 @@ void AValorantPlayer::HideHands()
 
 	// 현재의 armmesh를 숨긴다.
 	ArmsMesh->SetHiddenInGame(true);
+	CurrentWeapon->SetActorHiddenInGame(true);
 
 	// 무기를 없앤다.	
-	PreviousWeaponIdx = CurrentWeaponIdx;
-	EquipWeapon(-1);	
+	if (bChgangeWeapon)
+	{
+		TemporaryWeaponIdx = CurrentWeaponIdx;
+		EquipWeapon(-1);
+	}
+
+	bCanSwapWeapon = false;
+	bChangeWeaponWhenHideOrReveal = false;
 }
 
 void AValorantPlayer::RevealHands(bool bChangeWeapon)
 {
 	bInvisibleHands = false;
+	bCanSwapWeapon = true;
 	if (!ArmsMesh)
 	{
 		UE_LOG(LogTemp, Error, TEXT("Cant Find Arms"));
@@ -361,12 +396,21 @@ void AValorantPlayer::RevealHands(bool bChangeWeapon)
 	ArmsMesh->SetHiddenInGame(false);
 
 	// 이전의 무기를 다시 보이게한다
-	if (!bChangeWeapon)
+	if (bChangeWeapon)
 	{
-		EquipWeapon(PreviousWeaponIdx);
-		PreviousWeaponIdx = -1;		
+		EquipWeapon(TemporaryWeaponIdx);
+		TemporaryWeaponIdx = -1;
 	}
-	bChangeWeaponWhenReveal = false;
+
+	if (!CurrentWeapon)
+	{
+		return;
+	}
+	
+	CurrentWeapon->SetActorHiddenInGame(false);
+
+
+	bChangeWeaponWhenHideOrReveal = false;
 }
 
 void AValorantPlayer::SkillQPressed()
@@ -419,28 +463,27 @@ void AValorantPlayer::EquipWeapon(int32 Index)
 		UE_LOG(LogTemp, Warning, TEXT("Same Weapon"));
 		return;
 	}
-		
+
 	if (!bCanSwapWeapon)
 	{
-		return;
 		UE_LOG(LogTemp, Warning, TEXT("Cant Swap"));
+		return;
 	}
-	
+
 	if (CurrentWeapon)
 	{
 		CurrentWeapon->SetWeaponHidden(true);
 		CurrentWeapon->SetActorEnableCollision(false);
 		UE_LOG(LogTemp, Display, TEXT("Hide Weapon"));
 	}
-	
-	// 현재 무기를 없앤다 (스킬을 사용하는 경우)
+
+	// 현재 무기를 없앤다
 	if (Index == -1)
 	{
 		CurrentWeapon = nullptr;
 	}
 	else
 	{
-
 		bSwapWeapon = true;
 		if (!Weapons.IsValidIndex(Index))
 		{
@@ -451,19 +494,32 @@ void AValorantPlayer::EquipWeapon(int32 Index)
 		CurrentWeapon->SetActorEnableCollision(true);
 		UE_LOG(LogTemp, Display, TEXT("Equip Weapon : %d"), Index);
 	}
-	
+
 	CurrentWeaponIdx = Index;
 	AdjustFPView();
 }
 
 void AValorantPlayer::TakeReload()
 {
-	if (!CurrentWeapon)return;
-	if (!ArmsMesh) return;
+	if (!CurrentWeapon)
+	{
+		return;
+	}
+	if (CurrentWeapon->IsHidden())
+	{
+		return;
+	}
+	if (!ArmsMesh)
+	{
+		return;
+	}
 
 	bTakeReload = false;
 	UAnimInstance* Anim = ArmsMesh->GetAnimInstance();
-	if (!Anim || !ReloadMontage) return;
+	if (!Anim || !ReloadMontage)
+	{
+		return;
+	}
 
 	// Reload 애니메이션 몽타주 실행
 	if (!Anim->Montage_IsPlaying(ReloadMontage))
@@ -541,7 +597,7 @@ void AValorantPlayer::SetCharacterType(ECharacterType Type)
 	{
 		SkillComponent->SetOwnerPlayer(this);
 		SkillComponent->CharacterSelected();
-	}	
+	}
 }
 
 void AValorantPlayer::CheckUsePassive()
@@ -553,48 +609,6 @@ void AValorantPlayer::CheckUsePassive()
 			SkillComponent->UseSkillPassive();
 		}
 	}
-}
-
-FTransform AValorantPlayer::GetBladeTransformForView(int Index)
-{
-	APlayerController* PC = Cast<APlayerController>(GetController());
-	if (!PC)
-	{
-		return FTransform::Identity;
-	}
-
-	FVector CameraLocation;
-	FRotator CameraRotation;
-
-	PC->GetPlayerViewPoint(CameraLocation, CameraRotation);
-
-	FVector Forward = CameraRotation.Vector();
-	FVector Right = FRotationMatrix(CameraRotation).GetUnitAxis(EAxis::Y);
-	FVector Up = FRotationMatrix(CameraRotation).GetUnitAxis(EAxis::Z);
-
-	FVector Offset;
-	switch(Index)
-	{
-	case 0 :
-		Offset = Forward * 55 + Right * 35 + Up * 80;
-		break;
-	case 1:
-		Offset = Forward * 55 + Right * -35 + Up * 80;
-		break;
-	case 2:
-		Offset = Forward * 50 + Right * 0 + Up * 70;
-		break;
-	case 3:
-		Offset = Forward * 55 + Right * 50 + Up * 90;
-		break;
-	case 4:
-		Offset = Forward * 55 + Right * -50 + Up * 90;
-		break;
-	}
-
-	FTransform Result;
-	Result.SetLocation(CameraLocation + Offset);
-	return Result;
 }
 
 void AValorantPlayer::StartReload()
@@ -611,7 +625,7 @@ void AValorantPlayer::StartReload()
 void AValorantPlayer::EndReload()
 {
 	if (!CurrentMagazine) return;
-	
+
 	// 탄창 비활성화
 	CurrentMagazine->SetActorHiddenInGame(true);
 
@@ -631,9 +645,9 @@ void AValorantPlayer::EndDraw()
 }
 
 void AValorantPlayer::TurnOffAllCondition()
-{	
-	bSurWeapon = false;	
-	bSubWeapon = false;	
+{
+	bSurWeapon = false;
+	bSubWeapon = false;
 	bInspectWeapon = false;
 	bSwapWeapon = false;
 }
@@ -681,6 +695,18 @@ EWeaponState AValorantPlayer::GetCurWeaponState() const
 	}
 
 	return CurrentWeapon->GetCurWeaponState();
+}
+
+void AValorantPlayer::RequestHideHands(bool ChangeWeapon)
+{
+	bHideHands = true;
+	bChangeWeaponWhenHideOrReveal = ChangeWeapon;
+}
+
+void AValorantPlayer::RequestRevealHands(bool ChangeWeapon)
+{
+	bRevealHands = true;
+	bChangeWeaponWhenHideOrReveal = ChangeWeapon;
 }
 
 bool AValorantPlayer::IsAirborne()

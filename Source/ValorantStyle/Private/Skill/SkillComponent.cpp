@@ -46,24 +46,50 @@ void USkillComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActor
 void USkillComponent::ProhibitPlayerSwap()
 {
 	// 스킬을 사용하는동안 손을 숨기고 스왑을 금지시킴
-	OwnerPlayer->SetHideHands(true);
-	OwnerPlayer->SetSwapWeapon(false);
+	OwnerPlayer->RequestHideHands(false);
+	bDeactivatedPlayerHands = true;
 }
 
 void USkillComponent::PermitPlayerSwap()
 {
-	OwnerPlayer->GetWorldTimerManager().ClearTimer(CastingTimerHandle);
-
 	// 손을 다시 보이게하고, 스왑 가능
-	OwnerPlayer->SetRevealHands(true);
-	OwnerPlayer->SetSwapWeapon(true);
+	OwnerPlayer->RequestRevealHands(false);
+	bDeactivatedPlayerHands = false;
 }
 
-void USkillComponent::StartPermitTimer(float Time)
+void USkillComponent::CastingEndQSkil()
 {
-	// 기존 타이머 초기화
-	OwnerPlayer->GetWorldTimerManager().ClearTimer(CastingTimerHandle);
-	// 일정 시간이 지나면 해제
-	OwnerPlayer->GetWorldTimerManager().SetTimer(CastingTimerHandle, this, &USkillComponent::PermitPlayerSwap, SkillQCastingTime, false);
+	OwnerPlayer->GetWorldTimerManager().ClearTimer(CastingQHandle);
+	bSkillQCasting = false;
+	OffUsingSkill();
 }
 
+void USkillComponent::CastingEndESkil()
+{
+	OwnerPlayer->GetWorldTimerManager().ClearTimer(CastingEHandle);
+	bSkillECasting = false;
+	OffUsingSkill();
+}
+
+void USkillComponent::CastingEndCSkil()
+{
+	OwnerPlayer->GetWorldTimerManager().ClearTimer(CastingCHandle);
+	bSkillCCasting = false;
+	OffUsingSkill();
+}
+
+void USkillComponent::CastingEndUltiSkil()
+{
+	OwnerPlayer->GetWorldTimerManager().ClearTimer(CastingUltiHandle);
+	bSkillUltiCasting = false;
+	OffUsingSkill();
+}
+
+void USkillComponent::OffUsingSkill()
+{
+	// 모든 일반스킬이 꺼져있으면 
+	if (!bSkillCCasting && !bSkillECasting && !bSkillQCasting)
+	{
+		bUsingSkill = false;
+	}
+}
