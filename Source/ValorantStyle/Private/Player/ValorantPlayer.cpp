@@ -597,6 +597,8 @@ void AValorantPlayer::SetCharacterType(ECharacterType Type)
 	{
 		SkillComponent->SetOwnerPlayer(this);
 		SkillComponent->CharacterSelected();
+		
+		OnSkillComponentChanged.Broadcast(SkillComponent);
 	}
 }
 
@@ -695,6 +697,26 @@ EWeaponState AValorantPlayer::GetCurWeaponState() const
 	}
 
 	return CurrentWeapon->GetCurWeaponState();
+}
+
+float AValorantPlayer::GetCurrentHealth() const
+{
+	return Health;
+}
+
+float AValorantPlayer::GetCurrentShiled() const
+{
+	return Shield;
+}
+
+float AValorantPlayer::GetCurrentShiledPercent() const
+{
+	return Shield / MaxShield;
+}
+
+ABaseWeapon* AValorantPlayer::GetCurrentWeapon() const
+{
+	return CurrentWeapon;
 }
 
 void AValorantPlayer::RequestHideHands(bool ChangeWeapon)

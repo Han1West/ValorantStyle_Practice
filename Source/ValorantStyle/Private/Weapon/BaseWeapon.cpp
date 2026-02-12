@@ -94,6 +94,22 @@ void ABaseWeapon::SetWeaponHidden(bool Hidden)
 	}
 }
 
+int32 ABaseWeapon::GetCurrentAmmo() const
+{
+	return curAmmo;
+}
+
+int32 ABaseWeapon::GetLeftAmmo() const
+{
+	return leftAmmo;
+}
+
+bool ABaseWeapon::IsUseAmmo() const
+{
+	return bUseAmmo;
+}
+
+
 bool ABaseWeapon::CanReload() const
 {	
 	return curAmmo < maxAmmo && 0 < leftAmmo;

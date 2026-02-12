@@ -41,6 +41,19 @@ public:
 	virtual void AllAnimEndReload();
 
 	EWeaponState GetCurWeaponState() const;
+
+	void SetWeaponHidden(bool Hidden);
+
+	UFUNCTION(BlueprintPure)
+	int32 GetCurrentAmmo() const;
+
+	UFUNCTION(BlueprintPure)
+	int32 GetLeftAmmo() const;
+
+	UFUNCTION(BlueprintPure)
+	bool IsUseAmmo() const;
+
+
 public:
 	FVector2D CurrentRecoilOffset = FVector2D::ZeroVector;
 	UPROPERTY(EditDefaultsOnly, Category = "Recoil")
@@ -50,7 +63,6 @@ public:
 
 	float SpreadRecoverSpeed = 30.f;
 
-	void SetWeaponHidden(bool Hidden);
 
 private:
 	UPROPERTY(VisibleAnywhere)
@@ -71,6 +83,9 @@ protected:
 	int32 leftAmmo = 0;
 	UPROPERTY(VisibleAnywhere)
 	int32 curAmmo = 0;
+	UPROPERTY(VisibleAnywhere)
+	bool bUseAmmo = false;
+
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	float TriggerDelayTime = 0.f;

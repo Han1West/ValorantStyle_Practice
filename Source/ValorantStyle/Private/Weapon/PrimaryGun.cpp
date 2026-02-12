@@ -20,6 +20,7 @@ void APrimaryGun::BeginPlay()
 	maxAmmo = 25;
 	curAmmo = 20;
 	leftAmmo = 75;
+	bUseAmmo = true;
 
 	TriggerDelayTime = 0.1f;
 
@@ -36,14 +37,17 @@ void APrimaryGun::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (IsHidden())
+	if (WeaponState != EWeaponState::Reloading)
 	{
-		CurrentMagazine->SetActorHiddenInGame(true);
+		if (IsHidden())
+		{
+			CurrentMagazine->SetActorHiddenInGame(true);
+		}
+		else
+		{
+			CurrentMagazine->SetActorHiddenInGame(false);
+		}
 	}
-	else
-	{
-		CurrentMagazine->SetActorHiddenInGame(false);
-	}	
 }
 
 // ÅºÃ¢ Á¦°Å
