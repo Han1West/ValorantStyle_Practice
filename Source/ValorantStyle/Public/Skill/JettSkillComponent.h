@@ -54,7 +54,6 @@ private:
 	bool bHoldingC = false;
 	bool bWasUsingUlti = false;
 
-	float AccTime = 0.f;
 	float ControlledTime = 0.f;
 	float BladeStormFireDelay = 0.2f;
 

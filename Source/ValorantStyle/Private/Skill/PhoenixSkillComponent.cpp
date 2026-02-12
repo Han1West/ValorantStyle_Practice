@@ -2,19 +2,55 @@
 
 
 #include "Skill/PhoenixSkillComponent.h"
+#include "UObject/ConstructorHelpers.h"
 
+UPhoenixSkillComponent::UPhoenixSkillComponent()
+{
+	static ConstructorHelpers::FObjectFinder<UTexture2D> QTextureObj(TEXT("/Game/UIAsset/Phoenix_Q"));
+	static ConstructorHelpers::FObjectFinder<UTexture2D> ETextureObj(TEXT("/Game/UIAsset/Phoenix_E"));
+	static ConstructorHelpers::FObjectFinder<UTexture2D> CTextureObj(TEXT("/Game/UIAsset/Phoenix_C"));
+	static ConstructorHelpers::FObjectFinder<UTexture2D> UltiTextureObj(TEXT("/Game/UIAsset/Phoenix_Ulti"));
+
+	if (QTextureObj.Succeeded())
+	{
+		QSkillIconTexture = QTextureObj.Object;
+	}
+	if (ETextureObj.Succeeded())
+	{
+		ESkillIconTexture = ETextureObj.Object;
+	}
+	if (CTextureObj.Succeeded())
+	{
+		CSkillIconTexture = CTextureObj.Object;
+	}
+	if (UltiTextureObj.Succeeded())
+	{
+		UltiSkillIconTexture = UltiTextureObj.Object;
+	}
+}
 
 void UPhoenixSkillComponent::BeginPlay()
 {
+	SkillMaxQCount = 1;
 	SkillQCount = 1;
-	SkillECount = 1;
-	SkillCCount = 2;
+
+	SkillMaxECount = 2;
+	SkillECount = 2;
+
+	SkillMaxCCount = 1;
+	SkillCCount = 1;
+
 	NeedUltimateCount = 7;
 	CurrentUltimateCount = 0;
 }
 
 void UPhoenixSkillComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
+}
+
+void UPhoenixSkillComponent::CharacterSelected()
+{
+	Super::CharacterSelected();
 }
 
 void UPhoenixSkillComponent::UseSkillQ()

@@ -43,6 +43,43 @@ void USkillComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActor
 	// ...
 }
 
+void USkillComponent::CharacterSelected()
+{
+	// 스킬 아이콘 변경
+	BroadcastAllIcons();
+}
+
+float USkillComponent::GetSkillDurationPercent() const
+{
+	if (bActiveHasDurationSkill)
+	{
+		return (1.f - (CurrentActiveAccTime / CurrentActiveDurationTime));
+	}
+	else
+	{
+		return 0.f;
+	}
+		
+}
+
+void USkillComponent::BroadcastAllIcons()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Broadcast from %s"), *GetName());
+
+	if (QSkillIconTexture)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Icon Valid: %s"), *QSkillIconTexture->GetName());
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Icon NULL"));
+	}
+	OnSkillIconChanged.Broadcast(ESkillSlot::Q, QSkillIconTexture);
+	OnSkillIconChanged.Broadcast(ESkillSlot::E, ESkillIconTexture);
+	OnSkillIconChanged.Broadcast(ESkillSlot::C, CSkillIconTexture);
+	OnSkillIconChanged.Broadcast(ESkillSlot::Ulti, UltiSkillIconTexture);
+}
+
 void USkillComponent::ProhibitPlayerSwap()
 {
 	// 스킬을 사용하는동안 손을 숨기고 스왑을 금지시킴

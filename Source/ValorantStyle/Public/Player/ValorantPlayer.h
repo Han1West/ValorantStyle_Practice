@@ -15,6 +15,11 @@ enum class ECharacterType
 
 class ABaseWeapon;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(
+	FOnSkillComponentChanged,
+	USkillComponent*, NewSkillComponent
+);
+
 UCLASS()
 class VALORANTSTYLE_API AValorantPlayer : public ACharacter
 {
@@ -63,6 +68,17 @@ public:
 	UFUNCTION(BlueprintPure)
 	enum EWeaponState GetCurWeaponState() const;
 
+	UFUNCTION(BlueprintPure)
+	float GetCurrentHealth() const;
+	UFUNCTION(BlueprintPure)
+	float GetCurrentShiled() const;
+	UFUNCTION(BlueprintPure)
+	float GetCurrentShiledPercent() const;
+	UFUNCTION(BlueprintPure)
+	ABaseWeapon* GetCurrentWeapon() const;
+
+
+
 	class UCameraComponent* GetCameraComponent() const { return CameraComp; }
 
 	class USkillComponent* GetSkillComponent() const { return SkillComponent; }
@@ -83,6 +99,10 @@ public:
 	void EndReload();
 	void AllAnimEndReload();
 	void EndDraw();
+
+	//
+	UPROPERTY(BlueprintAssignable)
+	FOnSkillComponentChanged OnSkillComponentChanged;
 
 private:
 	void AdjustSpeed();
@@ -204,6 +224,15 @@ private:
 	float OriginMaxSpeed = 0.f;
 	int32 CurrentWeaponIdx = -1;
 	int32 TemporaryWeaponIdx = 0;
+
+	UPROPERTY(EditDefaultsOnly)
+	float MaxHealth = 100;
+	UPROPERTY(EditDefaultsOnly)
+	float MaxShield = 50;
+	UPROPERTY(VisibleAnywhere)
+	float Health = 85;
+	UPROPERTY(VisibleAnywhere)
+	float Shield = 50;
 
 	class ABotSpawner* BotSpawner = nullptr;
 };

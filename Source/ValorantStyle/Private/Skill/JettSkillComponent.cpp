@@ -9,12 +9,17 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Camera/CameraComponent.h"
+#include "UObject/ConstructorHelpers.h"
 
 UJettSkillComponent::UJettSkillComponent()
 {
 	static ConstructorHelpers::FClassFinder<ACloudburst> CloudburstFinder(TEXT("/Game/BP_Cloudburst"));
 	static ConstructorHelpers::FClassFinder<ABladeStorm> BladestormFinder(TEXT("/Game/BP_Bladestorm"));
 
+	static ConstructorHelpers::FObjectFinder<UTexture2D> QTextureObj(TEXT("/Game/UIAsset/Jett_Q"));
+	static ConstructorHelpers::FObjectFinder<UTexture2D> ETextureObj(TEXT("/Game/UIAsset/Jett_E"));
+	static ConstructorHelpers::FObjectFinder<UTexture2D> CTextureObj(TEXT("/Game/UIAsset/Jett_C"));
+	static ConstructorHelpers::FObjectFinder<UTexture2D> UltiTextureObj(TEXT("/Game/UIAsset/Jett_Ulti"));
 
 	if (CloudburstFinder.Succeeded())
 	{
@@ -25,26 +30,75 @@ UJettSkillComponent::UJettSkillComponent()
 	{
 		BladestormClass = BladestormFinder.Class;
 	}
+	
+	if (QTextureObj.Succeeded())
+	{
+		QSkillIconTexture = QTextureObj.Object;
+		UE_LOG(LogTemp, Error, TEXT("Load Q Image"));
+	}
+	else 
+	{
+		UE_LOG(LogTemp, Error, TEXT("NO Q Image"));
+	}
 
+	if (ETextureObj.Succeeded())
+	{
+		ESkillIconTexture = ETextureObj.Object;
+		UE_LOG(LogTemp, Error, TEXT("Load E Image"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("NO E Image"));
+	}
+
+	if (CTextureObj.Succeeded())
+	{
+		CSkillIconTexture = CTextureObj.Object;
+		UE_LOG(LogTemp, Error, TEXT("Load C Image"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("NO C Image"));
+	}
+
+	if (UltiTextureObj.Succeeded())
+	{
+		UltiSkillIconTexture = UltiTextureObj.Object;
+		UE_LOG(LogTemp, Error, TEXT("Load Ulti Image"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("NO Ulti Image"));
+	}
 }
 
 void UJettSkillComponent::BeginPlay()
 {
 	bPassive = true;
 
-	SkillQCount = 5;
-	SkillECount = 5;
-	SkillCCount = 5;
+	SkillMaxQCount = 1;
+	SkillQCount = 1;
+
+	SkillMaxECount = 1;
+	SkillECount = 1;
+
+	SkillMaxCCount = 2;
+	SkillCCount = 2;
+
 	NeedUltimateCount = 7;
 	CurrentUltimateCount = 7;
 
 	SkillQCastingTime = 1.f;
 	SkillECastingTime = 1.f;
 	SkillCCastingTime = 0.4f;
+
+	SkillEDurationTime = 10.f;
 }
 
 void UJettSkillComponent::CharacterSelected()
 {
+	Super::CharacterSelected();
+
 	// 제트 칼날 폭풍 미리 소환
 	for (int i = 0; i < 5; ++i)
 	{
@@ -70,15 +124,16 @@ void UJettSkillComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 {
 	if (bTailWind)
 	{
-		AccTime += DeltaTime;
-
+		CurrentActiveAccTime += DeltaTime;		
 		// 일정 시간안에 스킬을 다시 발동시키지 않으면 초기화
-		if (AccTime > 10.f)
+		if (CurrentActiveAccTime > CurrentActiveDurationTime)
 		{
+			CurrentActiveAccTime = 0.f;
+			CurrentActiveDurationTime = 0.f;
+			bActiveHasDurationSkill = false;
 			bTailWind = false;
 			SkillECount--;
-		}
-		UE_LOG(LogTemp, Display, TEXT("%f"), AccTime);
+		}		
 	}
 
 	// C키를 지속적으로 누른상태라면 (한번도 떼지 않고)
@@ -200,16 +255,20 @@ void UJettSkillComponent::UseSkillE()
 	if (!bTailWind)
 	{
 		bTailWind = true;
+		bActiveHasDurationSkill = true;
+		CurrentActiveDurationTime = SkillEDurationTime;
 		return;
 	}
 
 	// 딜레이 이후 다시 누르면
-	if (AccTime > 0.3f && bTailWind)
-	{
-		// 순풍 매커니즘
-		AccTime = 0.f;
+	if (CurrentActiveAccTime > 0.3f && bTailWind)
+	{		
 		bTailWind = false;
+		CurrentActiveAccTime = 0.f;
+		CurrentActiveDurationTime = 0.f;
+		bActiveHasDurationSkill = false;
 
+		// 순풍 매커니즘
 		APlayerController* PC = Cast<APlayerController>(OwnerPlayer->GetController());
 		if (PC)
 		{
