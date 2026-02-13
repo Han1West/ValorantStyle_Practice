@@ -63,6 +63,12 @@ private:
 	FTimerHandle RespawnTimerHandle;
 
 	TMap<FName, EHitPart> BoneToPartMap;
+
+	UPROPERTY(EditDefaultsOnly, category="Sound")
+	USoundBase* BodyHitSound;
+	UPROPERTY(EditDefaultsOnly, category = "Sound")
+	USoundBase* HeadHitSound;
+
 private:
 	void InitBoneMap();
 

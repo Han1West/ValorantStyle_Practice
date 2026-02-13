@@ -129,6 +129,11 @@ protected:
 	UPROPERTY(EditAnywhere)
 	float NormalDamage = 10.f;
 
+	UPROPERTY(EditAnywhere, Category = "Sound")
+	USoundBase* AttackSound;
+
+	UPROPERTY(EditAnywhere, Category = "Sound")
+	USoundBase* BulletHitSound;
 
 protected:
 	virtual bool CanReload() const;

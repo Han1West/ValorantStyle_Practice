@@ -119,10 +119,13 @@ float ADummyBot::CalculatePartialDamage(float OriginDamage, FDamageEvent const& 
 	{
 	case EHitPart::Head:
 		OriginDamage *= 4.f;
+		UGameplayStatics::SpawnSoundAtLocation(GetWorld(), HeadHitSound, GetActorLocation(), GetActorRotation(), 0.2f);
 		break;
 	case EHitPart::Body:
+		UGameplayStatics::SpawnSoundAtLocation(GetWorld(), BodyHitSound, GetActorLocation(), GetActorRotation(), 0.2f);
 		break;
 	case EHitPart::ArmLeg:
+		UGameplayStatics::SpawnSoundAtLocation(GetWorld(), BodyHitSound, GetActorLocation(), GetActorRotation(), 0.2f);
 		OriginDamage *= 0.85f;
 		break;
 	case EHitPart::None:
