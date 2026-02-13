@@ -5,6 +5,8 @@
 #include "Magazine/Magazine.h"
 #include "DrawDebugHelpers.h"
 
+#include "kismet/GameplayStatics.h"
+
 // Sets default values
 APrimaryGun::APrimaryGun()
 {
@@ -56,6 +58,7 @@ void APrimaryGun::StartReload()
 	if (!CurrentMagazine) return;
 
 	CurrentMagazine->SetActorHiddenInGame(true);
+	
 }
 
 // 탄창 생성 및 총알 업데이트
@@ -146,6 +149,8 @@ void APrimaryGun::FireOnce()
 		return;
 	}
 
+	UGameplayStatics::SpawnSoundAttached(AttackSound, Mesh, TEXT("Muzzle_Socket"));
+
 	float CurrentTime = GetWorld()->TimeSeconds;
 	// 만약 회복 시간을 지나면 패턴 초기화
 	if (CurrentTime - LastFireTime > RecoilResetTime)
@@ -178,10 +183,15 @@ void APrimaryGun::FireOnce()
 		AActor* HitActor = Hit.GetActor();
 		if (HitActor)
 		{			
+			if (HitActor->GetRootComponent()->Mobility == EComponentMobility::Static)
+			{
+				UGameplayStatics::SpawnSoundAtLocation(GetWorld(), BulletHitSound, Hit.ImpactPoint, FRotator::ZeroRotator, 0.2f);
+			}
 			FPointDamageEvent DamageEvent(NormalDamage, Hit, ShotDirection, nullptr);			
 			AController* OwnerController = GetOwnerController();
 			HitActor->TakeDamage(NormalDamage, DamageEvent, OwnerController, this);
 		}
+		
 
 	}
 	else

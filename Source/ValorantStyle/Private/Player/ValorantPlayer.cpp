@@ -14,6 +14,9 @@
 #include "Skill/JettSkillComponent.h"
 #include "Skill/PhoenixSkillComponent.h"
 
+#include "Components/AudioComponent.h"
+#include "kismet/GameplayStatics.h"
+
 // Sets default values
 AValorantPlayer::AValorantPlayer()
 {
@@ -83,6 +86,18 @@ void AValorantPlayer::BeginPlay()
 	BotSpawner = Cast<ABotSpawner>(UGameplayStatics::GetActorOfClass(GetWorld(), ABotSpawner::StaticClass()));
 
 	GetWorld()->GetTimerManager().SetTimerForNextTick(this, &AValorantPlayer::SetCharaterTypeToJett);
+
+	FootstepAudio = UGameplayStatics::SpawnSoundAttached(FootstepSound, GetRootComponent());
+
+	FootstepAudio->Stop();
+
+}
+
+void AValorantPlayer::Landed(const FHitResult& Hit)
+{
+	Super::Landed(Hit);
+	UGameplayStatics::SpawnSoundAtLocation(GetWorld(), JumplandingSound, GetActorLocation());
+
 }
 
 // Called every frame
@@ -103,8 +118,31 @@ void AValorantPlayer::Tick(float DeltaTime)
 	}
 	else
 	{
-		bMove = false;
+		bMove = false;		
 	}
+
+	if (10.f < GetVelocity().Size2D() && !bWalk && !bCrouch &&!IsAirborne())
+	{
+		AccumulatedMoveTime += DeltaTime;
+		AccumulatedStopTime = 0.f;
+
+		UE_LOG(LogTemp, Display, TEXT("cur Time : %f"), AccumulatedMoveTime);
+		if (AccumulatedMoveTime >= StartThreshold)
+		{
+			PlayFootstep();
+		}
+	}
+	else
+	{
+		AccumulatedStopTime += DeltaTime;
+		StopFootstep();		
+	}
+
+	if (AccumulatedStopTime >= StopThreshold)
+	{
+		AccumulatedMoveTime = 0.f;
+	}
+
 
 	if (bHideHands)
 	{
@@ -217,6 +255,8 @@ void AValorantPlayer::MoveRight(float AxisValue)
 
 void AValorantPlayer::JumpPressed()
 {
+	UGameplayStatics::SpawnSoundAtLocation(GetWorld(), JumpStartSound, GetActorLocation());
+
 	if (bIsCrouched)
 	{
 		UnCrouch();
@@ -612,6 +652,25 @@ void AValorantPlayer::CheckUsePassive()
 		}
 	}
 }
+
+void AValorantPlayer::PlayFootstep()
+{
+	if (!bIsFootstepPlaying && FootstepAudio)
+	{
+		FootstepAudio->Play();
+		bIsFootstepPlaying = true;
+	}
+}
+
+void AValorantPlayer::StopFootstep()
+{
+	if (bIsFootstepPlaying && FootstepAudio)
+	{
+		FootstepAudio->Stop();
+		bIsFootstepPlaying = false;
+	}
+}
+
 
 void AValorantPlayer::StartReload()
 {

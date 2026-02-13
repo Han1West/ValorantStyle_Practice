@@ -32,6 +32,7 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	virtual void Landed(const FHitResult& Hit) override;
 
 public:	
 	// Called every frame
@@ -158,7 +159,8 @@ private:
 	void SetCharacterType(ECharacterType Type);
 	void CheckUsePassive();
 
-	FTransform GetBladeTransformForView(int Index);
+	void PlayFootstep();
+	void StopFootstep();
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "FPS", meta = (AllowPrivateAccess = "true"))
@@ -220,6 +222,25 @@ private:
 	FVector2D LastAppliedRecoil = FVector2D::ZeroVector;
 
 	ECharacterType CurrentCharacterType = ECharacterType::NONE;
+
+	UPROPERTY()
+	UAudioComponent* FootstepAudio;
+
+	UPROPERTY(EditDefaultsOnly, Category="Sound")
+	USoundBase* FootstepSound;
+	UPROPERTY(EditDefaultsOnly, Category = "Sound")
+	USoundBase* JumpStartSound;
+	UPROPERTY(EditDefaultsOnly, Category = "Sound")
+	USoundBase* JumplandingSound;
+
+	float AccumulatedMoveTime = 0.f;
+	float AccumulatedStopTime = 0.f;
+	float StartThreshold = 0.5f;
+	float StopThreshold = 0.2f;
+
+	bool bIsFootstepPlaying = false;
+
+
 private:
 	float OriginMaxSpeed = 0.f;
 	int32 CurrentWeaponIdx = -1;
