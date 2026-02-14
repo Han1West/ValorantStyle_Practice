@@ -6,6 +6,9 @@
 #include "DrawDebugHelpers.h"
 
 #include "kismet/GameplayStatics.h"
+#include "NiagaraSystem.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
 
 // Sets default values
 APrimaryGun::APrimaryGun()
@@ -175,24 +178,39 @@ void APrimaryGun::FireOnce()
 	FHitResult Hit;
 	FVector ShotDirection;
 	
+	FVector Start = Mesh->GetSocketLocation(TEXT("Muzzle_Socket"));
+	FVector End;
+
 	if (GunTraceWithRecoil(Hit, ShotDirection, Recoil))
 	{
+		End = Hit.ImpactPoint;
+
 		DrawDebugPoint(GetWorld(), Hit.Location, 20, FColor::Red, true);
-		//UE_LOG(LogTemp, Warning, TEXT("Line Trace Success"));
+	
 		
 		AActor* HitActor = Hit.GetActor();
 		if (HitActor)
 		{			
+			// 벽 과 같은 Static 물체에 충돌 시 사운드 재생
 			if (HitActor->GetRootComponent()->Mobility == EComponentMobility::Static)
 			{
 				UGameplayStatics::SpawnSoundAtLocation(GetWorld(), BulletHitSound, Hit.ImpactPoint, FRotator::ZeroRotator, 0.2f);
 			}
+
 			FPointDamageEvent DamageEvent(NormalDamage, Hit, ShotDirection, nullptr);			
 			AController* OwnerController = GetOwnerController();
 			HitActor->TakeDamage(NormalDamage, DamageEvent, OwnerController, this);
 		}
 		
+		if (TracerEffect)
+		{
+			UNiagaraComponent* Tracer =	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), TracerEffect, Start);
 
+			if (Tracer)
+			{
+				Tracer->SetVectorParameter(TEXT("Target"), End);
+			}
+		}
 	}
 	else
 	{

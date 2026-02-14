@@ -105,6 +105,9 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FOnSkillComponentChanged OnSkillComponentChanged;
 
+	void PlayerGetKill();
+
+
 private:
 	void AdjustSpeed();
 	void AdjustFPView();

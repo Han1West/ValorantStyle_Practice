@@ -70,6 +70,9 @@ UJettSkillComponent::UJettSkillComponent()
 	{
 		UE_LOG(LogTemp, Error, TEXT("NO Ulti Image"));
 	}
+
+
+	CharacterClass = ECharacterClass::Duelist;
 }
 
 void UJettSkillComponent::BeginPlay()
@@ -86,7 +89,7 @@ void UJettSkillComponent::BeginPlay()
 	SkillCCount = 2;
 
 	NeedUltimateCount = 7;
-	CurrentUltimateCount = 7;
+	CurrentUltimateCount = 0;
 
 	SkillQCastingTime = 1.f;
 	SkillECastingTime = 1.f;
@@ -413,25 +416,25 @@ void UJettSkillComponent::ReleaseSKillC()
 
 void UJettSkillComponent::UseSkillUlti()
 {
-	// 궁극기 포인트가 부족하면 사용 불가
-	if (CurrentUltimateCount < NeedUltimateCount)
+	// 아직 다 안쓴 칼날폭풍이 있다면
+	if (ActivatedBladestormsCount > 0)
 	{
-		// 아직 다 안쓴 칼날폭풍이 있다면
-		if (ActivatedBladestormsCount > 0)
-		{
-			OwnerPlayer->RequestHideHands(true);
-			SpawnBladestorm();
-		}
-		else
+		OwnerPlayer->RequestHideHands(true);
+		SpawnBladestorm();
+	}
+	else
+	{
+		// 궁극기 포인트가 부족하면 사용 불가
+		if (CurrentUltimateCount < NeedUltimateCount)
 		{
 			NeedMoreSkill();
+			return;
 		}
-		return;
+			
+		OwnerPlayer->RequestHideHands(true);
+		InitialSpawnBladestorm();
 	}
 
-	OwnerPlayer->RequestHideHands(true);
-	CurrentUltimateCount = 0;
-	InitialSpawnBladestorm();
 
 	UE_LOG(LogTemp, Display, TEXT("Use Jett Skill Ulti"));
 }
@@ -726,6 +729,7 @@ void UJettSkillComponent::DeSpawnOneBladeStorm()
 			if (ActivatedBladestormsCount <= 0)
 			{
 				ActivatedBladestormsCount = 0;
+				CurrentUltimateCount = 0;
 				EndSkillUlti();				
 			}
 			return;

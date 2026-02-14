@@ -17,6 +17,17 @@ enum class ESkillSlot : uint8
 	Ulti,
 };
 
+UENUM(BlueprintType)
+enum class ECharacterClass : uint8
+{
+	Initiator,
+	Sentinel,
+	Duelist,
+	Controller,
+	NONE,
+};
+
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(
 	FOnSkillIconChanged,
 	ESkillSlot, Slot,
@@ -44,6 +55,7 @@ public:
 	// 캐릭터가 선택되고 미리 수행할 작업들
 	virtual void CharacterSelected();
 	
+	// 스킬 구현
 	virtual void UseSkillQ() {};
 	virtual void ReleaseSKillQ() {};	
 
@@ -62,6 +74,7 @@ public:
 	virtual void PressMouseRBTN() {};
 	virtual void ReleaseMouseLBTN() {};
 	virtual void ReleaseMouseRBTN() {};
+	//
 
 	virtual void CheckPlayerKeyInput(FKey PressedKey) {};
 
@@ -101,13 +114,18 @@ public:
 	bool IsActiveHasDurationSkill() const { return bActiveHasDurationSkill; }
 	UFUNCTION(BlueprintPure)
 	float GetSkillDurationPercent() const;
-
+	UFUNCTION(BlueprintPure)
+	int32 GetCurrentKillCount() const { return KillCount; }
+	UFUNCTION(BlueprintPure)
+	ECharacterClass GetCharacterClass() const { return CharacterClass; }
 
 	UPROPERTY(BlueprintAssignable)
 	FOnSkillIconChanged OnSkillIconChanged;
 
 	UFUNCTION(BlueprintCallable)
 	void BroadcastAllIcons();
+
+	void GetKill();
 
 protected:
 	UPROPERTY()
@@ -121,20 +139,25 @@ protected:
 	UTexture2D* CSkillIconTexture;
 	UPROPERTY()
 	UTexture2D* UltiSkillIconTexture;
+	
+	UPROPERTY()
+	ECharacterClass CharacterClass = ECharacterClass::NONE;
 
 	bool bPassive = false;
 
-	int SkillMaxQCount = 0;
-	int SkillQCount = 0;
+	int32 SkillMaxQCount = 0;
+	int32 SkillQCount = 0;
 
-	int SkillMaxECount = 0;
-	int SkillECount = 0;
+	int32 SkillMaxECount = 0;
+	int32 SkillECount = 0;
 
-	int SkillMaxCCount = 0;
-	int SkillCCount = 0;
+	int32 SkillMaxCCount = 0;
+	int32 SkillCCount = 0;
 
-	int NeedUltimateCount = 0;
-	int CurrentUltimateCount = 0;
+	int32 NeedUltimateCount = 0;
+	int32 CurrentUltimateCount = 0;
+
+	int32 KillCount = 0;
 
 	float SkillQCastingTime = 0.f;
 	float SkillECastingTime = 0.f;
@@ -170,7 +193,7 @@ protected:
 	FTimerHandle CastingEHandle;
 	FTimerHandle CastingCHandle;
 	FTimerHandle CastingUltiHandle;
-
+	
 protected:
 	void DontHaveSkill();
 	void NeedMoreSkill();
