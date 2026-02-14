@@ -135,6 +135,9 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Sound")
 	USoundBase* BulletHitSound;
 
+	UPROPERTY(EditDefaultsOnly, Category = "VFX")
+	class UNiagaraSystem* TracerEffect;
+
 protected:
 	virtual bool CanReload() const;
 	virtual void OnReloadStart();

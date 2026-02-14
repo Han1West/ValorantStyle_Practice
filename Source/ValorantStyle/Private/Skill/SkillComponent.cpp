@@ -80,6 +80,32 @@ void USkillComponent::BroadcastAllIcons()
 	OnSkillIconChanged.Broadcast(ESkillSlot::Ulti, UltiSkillIconTexture);
 }
 
+void USkillComponent::GetKill()
+{
+	// 킬로 Ultimate 충전
+	if (CurrentUltimateCount < NeedUltimateCount)
+	{
+		CurrentUltimateCount++;
+	}
+
+	// 킬로 E스킬 충전
+	if (CharacterClass == ECharacterClass::Duelist)
+	{		
+		// 현재 E스킬이 소비된 상황
+		if (SkillECount < SkillMaxECount)
+		{			
+			KillCount++;			
+
+			// 킬카운트를 더해서 조건이 충족되면 E스킬 충전
+			if (KillCount == 2)
+			{
+				SkillECount++;
+				KillCount = 0;
+			}
+		}
+	}
+}
+
 void USkillComponent::ProhibitPlayerSwap()
 {
 	// 스킬을 사용하는동안 손을 숨기고 스왑을 금지시킴

@@ -4,6 +4,7 @@
 #include "Bot/DummyBot.h"
 #include "Bot/BotSpawner.h"
 #include "Skill/Object/BladeStorm.h"
+#include "Player/ValorantPlayer.h"
 
 #include "Components/CapsuleComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -68,6 +69,14 @@ float ADummyBot::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
 	if (IsDead())
 	{
 		DummyDeathProcess();
+
+		AValorantPlayer* Player = Cast<AValorantPlayer>(EventInstigator->GetPawn());
+
+		if(Player)
+		{
+			// 플레이어에게 킬정보 넘김
+			Player->PlayerGetKill();
+		}
 
 		if (ABladeStorm* Blade = Cast<ABladeStorm>(DamageCauser))
 		{

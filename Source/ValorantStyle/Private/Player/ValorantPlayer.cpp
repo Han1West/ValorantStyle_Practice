@@ -125,8 +125,6 @@ void AValorantPlayer::Tick(float DeltaTime)
 	{
 		AccumulatedMoveTime += DeltaTime;
 		AccumulatedStopTime = 0.f;
-
-		UE_LOG(LogTemp, Display, TEXT("cur Time : %f"), AccumulatedMoveTime);
 		if (AccumulatedMoveTime >= StartThreshold)
 		{
 			PlayFootstep();
@@ -213,6 +211,12 @@ void AValorantPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 	PlayerInputComponent->BindAction(TEXT("PickJett"), IE_Pressed, this, &AValorantPlayer::SetCharaterTypeToJett);
 	PlayerInputComponent->BindAction(TEXT("PickPhoenix"), IE_Pressed, this, &AValorantPlayer::SetCharaterTypeToPhoenix);
 
+}
+
+void AValorantPlayer::PlayerGetKill()
+{
+	// 플레이어가 킬 한 정보를 스킬에 넘긴다
+	SkillComponent->GetKill();
 }
 
 void AValorantPlayer::AdjustSpeed()

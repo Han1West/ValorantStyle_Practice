@@ -27,6 +27,8 @@ UPhoenixSkillComponent::UPhoenixSkillComponent()
 	{
 		UltiSkillIconTexture = UltiTextureObj.Object;
 	}
+
+	CharacterClass = ECharacterClass::Initiator;
 }
 
 void UPhoenixSkillComponent::BeginPlay()
@@ -40,7 +42,7 @@ void UPhoenixSkillComponent::BeginPlay()
 	SkillMaxCCount = 1;
 	SkillCCount = 1;
 
-	NeedUltimateCount = 7;
+	NeedUltimateCount = 6;
 	CurrentUltimateCount = 0;
 }
 
