@@ -3,8 +3,10 @@
 
 #include "Weapon/PrimaryGun.h"
 #include "Magazine/Magazine.h"
-#include "DrawDebugHelpers.h"
+#include "Player/ValorantPlayer.h"
 
+#include "DrawDebugHelpers.h"
+#include "Components/DecalComponent.h"
 #include "kismet/GameplayStatics.h"
 #include "NiagaraSystem.h"
 #include "NiagaraFunctionLibrary.h"
@@ -175,17 +177,35 @@ void APrimaryGun::FireOnce()
 
 	AccumulatedAimOffset.Y = FMath::Min(AccumulatedAimOffset.Y, 100.f);
 
+	// 반동 메쉬에 동시 적용
+	FVector RecoilLocation;
+	RecoilLocation.X = -Recoil.Y * 0.2f;
+	RecoilLocation.Y = Recoil.X * 0.1f;
+	RecoilLocation.Z = -Recoil.Y * 0.1f;
+	FRotator RecoilRotation;
+	RecoilRotation.Pitch = -Recoil.Y * 0.5f;
+	RecoilRotation.Yaw = Recoil.X * 0.3f;
+	RecoilRotation.Roll = Recoil.X * 0.2f;
+
+	OwnerPlayer->SetHandMeshRelativeLocationRotaiton(RecoilLocation, RecoilRotation);
+
 	FHitResult Hit;
 	FVector ShotDirection;
 	
 	FVector Start = Mesh->GetSocketLocation(TEXT("Muzzle_Socket"));
 	FVector End;
 
+	UNiagaraFunctionLibrary::SpawnSystemAttached(MuzzleFlashEffect, Mesh, TEXT("Muzzle_Socket"),
+		FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTarget, true);
+
 	if (GunTraceWithRecoil(Hit, ShotDirection, Recoil))
 	{
 		End = Hit.ImpactPoint;
 
-		DrawDebugPoint(GetWorld(), Hit.Location, 20, FColor::Red, true);
+		FRotator SparkRotation = Hit.ImpactNormal.Rotation();
+		FVector SparkLocation = Hit.ImpactPoint + Hit.ImpactNormal * 2.f;
+
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BulletSparkEffect, SparkLocation, SparkRotation);
 	
 		
 		AActor* HitActor = Hit.GetActor();
@@ -195,6 +215,14 @@ void APrimaryGun::FireOnce()
 			if (HitActor->GetRootComponent()->Mobility == EComponentMobility::Static)
 			{
 				UGameplayStatics::SpawnSoundAtLocation(GetWorld(), BulletHitSound, Hit.ImpactPoint, FRotator::ZeroRotator, 0.2f);
+
+				UDecalComponent* Decal = UGameplayStatics::SpawnDecalAtLocation(GetWorld(), BulletHoleMaterial, 
+					FVector(10.f, 10.f, 10.f), Hit.ImpactPoint, Hit.ImpactNormal.Rotation(), 5.f);
+
+				if (Decal)
+				{
+					Decal->SetFadeScreenSize(0.0001f);				
+				}
 			}
 
 			FPointDamageEvent DamageEvent(NormalDamage, Hit, ShotDirection, nullptr);			

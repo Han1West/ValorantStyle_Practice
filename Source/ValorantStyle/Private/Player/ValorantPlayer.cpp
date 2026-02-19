@@ -3,19 +3,18 @@
 
 #include "Player/ValorantPlayer.h"
 #include "Bot/BotSpawner.h"
-#include "GameFramework/CharacterMovementComponent.h"
-#include "Camera/CameraComponent.h"
 #include "Weapon/BaseWeapon.h"
 #include "Magazine/Magazine.h"
 #include "Weapon/PrimaryGun.h"
 #include "Skill/Object/BladeStorm.h"
-#include "Kismet/GameplayStatics.h"
 #include "Skill/SkillComponent.h"
 #include "Skill/JettSkillComponent.h"
 #include "Skill/PhoenixSkillComponent.h"
 
+#include "Kismet/GameplayStatics.h"
 #include "Components/AudioComponent.h"
-#include "kismet/GameplayStatics.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "Camera/CameraComponent.h"
 
 // Sets default values
 AValorantPlayer::AValorantPlayer()
@@ -161,8 +160,6 @@ void AValorantPlayer::Tick(float DeltaTime)
 		bRevealHands = false;
 	}
 
-
-	CheckUsePassive();
 }
 
 // Called to bind functionality to input
@@ -219,6 +216,12 @@ void AValorantPlayer::PlayerGetKill()
 	SkillComponent->GetKill();
 }
 
+void AValorantPlayer::SetHandMeshRelativeLocationRotaiton(const FVector& Location, const FRotator& Rotation)
+{
+	FPView->SetRelativeLocation(AdjustLocation + Location);
+	FPView->SetRelativeRotation(AdjustRotation + Rotation);
+}
+
 void AValorantPlayer::AdjustSpeed()
 {
 	if (bWalk)
@@ -237,12 +240,16 @@ void AValorantPlayer::AdjustFPView()
 	switch (CurrentWeaponIdx)
 	{
 	case 0:
+		AdjustLocation = FVector(5.f, 5.f, -165.f);
+		AdjustRotation = FRotator(0.f, 90.f, 0.f);
 		FPView->SetRelativeLocation(FVector(5.f, 5.f, -165.f));
 		FPView->SetRelativeRotation(FRotator(0.f, 90.f, 0.f));
 		break;
 	case 1:
-		FPView->SetRelativeLocation(FVector(-25.f, 0.f, -170.f));
-		FPView->SetRelativeRotation(FRotator(0.f, 90.f, 0.f));
+		AdjustLocation = FVector(-25.f, 0.f, -170.f);
+		AdjustRotation = FRotator(0.f, 90.f, 0.f);
+		FPView->SetRelativeLocation(AdjustLocation);
+		FPView->SetRelativeRotation(AdjustRotation);
 		break;
 	}
 }
@@ -516,6 +523,7 @@ void AValorantPlayer::EquipWeapon(int32 Index)
 
 	if (CurrentWeapon)
 	{
+		CurrentWeapon->SetOwnerPlayer(nullptr);
 		CurrentWeapon->SetWeaponHidden(true);
 		CurrentWeapon->SetActorEnableCollision(false);
 		UE_LOG(LogTemp, Display, TEXT("Hide Weapon"));
@@ -534,6 +542,7 @@ void AValorantPlayer::EquipWeapon(int32 Index)
 			return;
 		}
 		CurrentWeapon = Weapons[Index];
+		CurrentWeapon->SetOwnerPlayer(this);
 		CurrentWeapon->SetWeaponHidden(false);
 		CurrentWeapon->SetActorEnableCollision(true);
 		UE_LOG(LogTemp, Display, TEXT("Equip Weapon : %d"), Index);
@@ -643,17 +652,6 @@ void AValorantPlayer::SetCharacterType(ECharacterType Type)
 		SkillComponent->CharacterSelected();
 		
 		OnSkillComponentChanged.Broadcast(SkillComponent);
-	}
-}
-
-void AValorantPlayer::CheckUsePassive()
-{
-	if (SkillComponent)
-	{
-		if (SkillComponent->IsHavePassiveSkill())
-		{
-			SkillComponent->UseSkillPassive();
-		}
 	}
 }
 

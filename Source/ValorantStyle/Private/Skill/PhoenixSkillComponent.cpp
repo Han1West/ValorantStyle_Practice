@@ -28,7 +28,7 @@ UPhoenixSkillComponent::UPhoenixSkillComponent()
 		UltiSkillIconTexture = UltiTextureObj.Object;
 	}
 
-	CharacterClass = ECharacterClass::Initiator;
+	CharacterClass = ECharacterClass::Duelist;
 }
 
 void UPhoenixSkillComponent::BeginPlay()

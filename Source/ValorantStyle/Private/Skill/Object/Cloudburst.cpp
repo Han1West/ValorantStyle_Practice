@@ -2,8 +2,10 @@
 
 
 #include "Skill/Object/Cloudburst.h"
+
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 ACloudburst::ACloudburst()
@@ -43,6 +45,8 @@ void ACloudburst::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
 	{
 		return;
 	}
+
+	UGameplayStatics::SpawnSoundAtLocation(GetWorld(), BurstSound, GetActorLocation());
 
 	bActivated = true;
 

@@ -35,6 +35,9 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class UProjectileMovementComponent* ProjectileComponent;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Sound")
+	USoundBase* BurstSound;
+
 	bool bActivated = false;
 	bool bIsControlled = true;
 	float AccTime = 0.f;
