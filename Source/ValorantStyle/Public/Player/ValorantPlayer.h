@@ -106,6 +106,7 @@ public:
 	FOnSkillComponentChanged OnSkillComponentChanged;
 
 	void PlayerGetKill();
+	void SetHandMeshRelativeLocationRotaiton(const FVector& Location, const FRotator& Rotation);
 
 
 private:
@@ -160,7 +161,6 @@ private:
 	void ApplyRecoil(float DeltaTime);
 
 	void SetCharacterType(ECharacterType Type);
-	void CheckUsePassive();
 
 	void PlayFootstep();
 	void StopFootstep();
@@ -242,6 +242,9 @@ private:
 	float StopThreshold = 0.2f;
 
 	bool bIsFootstepPlaying = false;
+
+	FVector AdjustLocation;
+	FRotator AdjustRotation;
 
 
 private:

@@ -10,6 +10,9 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Camera/CameraComponent.h"
 #include "UObject/ConstructorHelpers.h"
+#include "Kismet/GameplayStatics.h"
+#include "Components/AudioComponent.h"
+
 
 UJettSkillComponent::UJettSkillComponent()
 {
@@ -20,55 +23,71 @@ UJettSkillComponent::UJettSkillComponent()
 	static ConstructorHelpers::FObjectFinder<UTexture2D> ETextureObj(TEXT("/Game/UIAsset/Jett_E"));
 	static ConstructorHelpers::FObjectFinder<UTexture2D> CTextureObj(TEXT("/Game/UIAsset/Jett_C"));
 	static ConstructorHelpers::FObjectFinder<UTexture2D> UltiTextureObj(TEXT("/Game/UIAsset/Jett_Ulti"));
+	
+	static ConstructorHelpers::FObjectFinder<USoundBase> FlyStartSoundFinder(TEXT("/Game/SoundAsset/effect/Skill/Jett_fly_start"));
+	static ConstructorHelpers::FObjectFinder<USoundBase> FlyPersistSoundFinder(TEXT("/Game/SoundAsset/effect/Skill/Jett_fly_persist"));
+	static ConstructorHelpers::FObjectFinder<USoundBase> DashSoundFinder(TEXT("/Game/SoundAsset/effect/Skill/jett_dash"));
+	static ConstructorHelpers::FObjectFinder<USoundBase> UpDraftSoundFinder(TEXT("/Game/SoundAsset/effect/Skill/jett_updraft"));
+	static ConstructorHelpers::FObjectFinder<USoundBase> UltiSoundFinder(TEXT("/Game/SoundAsset/effect/Skill/jett_ulti"));	
+	static ConstructorHelpers::FObjectFinder<USoundBase> UltiShotSoundFinder(TEXT("/Game/SoundAsset/effect/Skill/bladestorm_shot"));
+	static ConstructorHelpers::FObjectFinder<USoundBase> UltiAllShotSoundFinder(TEXT("/Game/SoundAsset/effect/Skill/bladestorm_allshot"));
 
+	// 스킬 오브젝트 load
 	if (CloudburstFinder.Succeeded())
 	{
 		CloudburstClass = CloudburstFinder.Class;
 	}
-
 	if (BladestormFinder.Succeeded())
 	{
 		BladestormClass = BladestormFinder.Class;
-	}
-	
+	}	
+
+	// 스킬 이미지 load
 	if (QTextureObj.Succeeded())
 	{
 		QSkillIconTexture = QTextureObj.Object;
-		UE_LOG(LogTemp, Error, TEXT("Load Q Image"));
 	}
-	else 
-	{
-		UE_LOG(LogTemp, Error, TEXT("NO Q Image"));
-	}
-
 	if (ETextureObj.Succeeded())
 	{
 		ESkillIconTexture = ETextureObj.Object;
-		UE_LOG(LogTemp, Error, TEXT("Load E Image"));
 	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("NO E Image"));
-	}
-
 	if (CTextureObj.Succeeded())
 	{
 		CSkillIconTexture = CTextureObj.Object;
-		UE_LOG(LogTemp, Error, TEXT("Load C Image"));
 	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("NO C Image"));
-	}
-
 	if (UltiTextureObj.Succeeded())
 	{
 		UltiSkillIconTexture = UltiTextureObj.Object;
-		UE_LOG(LogTemp, Error, TEXT("Load Ulti Image"));
 	}
-	else
+
+	// 스킬 사운드 load
+	if (FlyStartSoundFinder.Succeeded())
 	{
-		UE_LOG(LogTemp, Error, TEXT("NO Ulti Image"));
+		FlyStartSound = FlyStartSoundFinder.Object;
+	}
+	if (FlyPersistSoundFinder.Succeeded())
+	{
+		FlyPersistSound = FlyPersistSoundFinder.Object;
+	}
+	if (DashSoundFinder.Succeeded())
+	{
+		DashSound = DashSoundFinder.Object;
+	}
+	if (UpDraftSoundFinder.Succeeded())
+	{
+		UpdraftSound = UpDraftSoundFinder.Object;
+	}
+	if (UltiSoundFinder.Succeeded())
+	{
+		DrawBladestormSound = UltiSoundFinder.Object;
+	}
+	if (UltiShotSoundFinder.Succeeded())
+	{
+		ShotBladestormSound = UltiShotSoundFinder.Object;
+	}
+	if (UltiAllShotSoundFinder.Succeeded())
+	{
+		ShotAllBladestormSound = UltiAllShotSoundFinder.Object;
 	}
 
 
@@ -106,6 +125,11 @@ void UJettSkillComponent::CharacterSelected()
 	for (int i = 0; i < 5; ++i)
 	{
 		ABladeStorm* NewBladestorm = GetWorld()->SpawnActor<ABladeStorm>(BladestormClass);
+		if (NewBladestorm == nullptr)
+		{
+			UE_LOG(LogTemp, Error, TEXT("Cant Load Bladestorm"));
+			return;
+		}
 
 		NewBladestorm->AttachToComponent(OwnerPlayer->GetCameraComponent(), FAttachmentTransformRules::KeepRelativeTransform);
 		FTransform NewTransform = GetBladeTransformForView(i);
@@ -125,6 +149,8 @@ void UJettSkillComponent::CharacterSelected()
 
 void UJettSkillComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
 	if (bTailWind)
 	{
 		CurrentActiveAccTime += DeltaTime;		
@@ -209,6 +235,8 @@ void UJettSkillComponent::UseSkillQ()
 	APlayerController* PC = Cast<APlayerController>(OwnerPlayer->GetController());
 	if (PC)
 	{
+		UGameplayStatics::SpawnSoundAtLocation(GetWorld(), UpdraftSound, OwnerPlayer->GetActorLocation());
+
 		FRotator ControllerRotation = PC->GetControlRotation();
 		FRotator YawRotation(0, ControllerRotation.Yaw, 0);
 		FVector UpDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Z);
@@ -266,6 +294,8 @@ void UJettSkillComponent::UseSkillE()
 	// 딜레이 이후 다시 누르면
 	if (CurrentActiveAccTime > 0.3f && bTailWind)
 	{		
+		UGameplayStatics::SpawnSoundAtLocation(GetWorld(), DashSound, OwnerPlayer->GetActorLocation());
+
 		bTailWind = false;
 		CurrentActiveAccTime = 0.f;
 		CurrentActiveDurationTime = 0.f;
@@ -430,7 +460,9 @@ void UJettSkillComponent::UseSkillUlti()
 			NeedMoreSkill();
 			return;
 		}
-			
+		
+		UGameplayStatics::SpawnSoundAtLocation(GetWorld(), DrawBladestormSound, OwnerPlayer->GetActorLocation());
+
 		OwnerPlayer->RequestHideHands(true);
 		InitialSpawnBladestorm();
 	}
@@ -446,18 +478,53 @@ void UJettSkillComponent::UseSkillPassive()
 	{
 		if (UCharacterMovementComponent* MovementComponent = OwnerPlayer->GetCharacterMovement())
 		{
-			if (PC->IsInputKeyDown(EKeys::SpaceBar))
+			bool bShoudActivate = PC->IsInputKeyDown(EKeys::SpaceBar) && MovementComponent->IsFalling() && MovementComponent->Velocity.Z < 0.f;
+
+			// 패시브 시작
+			if (bShoudActivate)
 			{
-				if (MovementComponent->IsFalling() && MovementComponent->Velocity.Z < 0.f)
+				if (!bPassiveActive)
 				{
+					bPassiveActive = true;
 					MovementComponent->GravityScale = 0.2f;
 					MovementComponent->AirControl = 1.f;
+
+					if (FlyStartSound)
+					{
+						FlyStartAudioComponent = UGameplayStatics::SpawnSoundAttached(FlyStartSound, OwnerPlayer->GetRootComponent());
+
+						if (FlyStartAudioComponent)
+						{
+							//FlyStartAudioComponent->Play();
+							FlyStartAudioComponent->OnAudioFinished.AddDynamic(this, &UJettSkillComponent::OnFlyStartSoundFinished);
+						}
+					}
+
 				}
 			}
 			else
 			{
-				MovementComponent->GravityScale = 1.f;
-				MovementComponent->AirControl = 0.05f;
+				if (bPassiveActive)
+				{
+					bPassiveActive = false;
+
+					MovementComponent->GravityScale = 1.f;
+					MovementComponent->AirControl = 0.05f;
+
+					if (FlyPersistAudioComponent)
+					{
+						FlyPersistAudioComponent->Stop();
+						FlyPersistAudioComponent = nullptr;
+					}
+
+					if (FlyStartAudioComponent)
+					{
+						FlyStartAudioComponent->Stop();
+						FlyStartAudioComponent = nullptr;
+					}
+
+				}
+				
 			}
 		}
 	}
@@ -553,6 +620,8 @@ void UJettSkillComponent::FireBladeStormOnce()
 	APlayerController* PC = Cast<APlayerController>(OwnerPlayer->GetController());
 	if (PC)
 	{
+		UGameplayStatics::SpawnSoundAtLocation(GetWorld(), ShotBladestormSound, OwnerPlayer->GetActorLocation());
+
 		FVector CameraLocation;
 		FRotator CameraRotation;
 		PC->GetPlayerViewPoint(CameraLocation, CameraRotation);
@@ -575,6 +644,8 @@ void UJettSkillComponent::FireBladeStormAll()
 	APlayerController* PC = Cast<APlayerController>(OwnerPlayer->GetController());
 	if (PC)
 	{
+		UGameplayStatics::SpawnSoundAtLocation(GetWorld(), ShotAllBladestormSound, OwnerPlayer->GetActorLocation());
+
 		FVector CameraLocation;
 		FRotator CameraRotation;
 		PC->GetPlayerViewPoint(CameraLocation, CameraRotation);
@@ -626,6 +697,11 @@ void UJettSkillComponent::SpawnProjectileBladestorm(const FVector& FireDirection
 
 FTransform UJettSkillComponent::GetBladeTransformForView(int Index)
 {
+	if (!OwnerPlayer)
+	{
+		UE_LOG(LogTemp, Error, TEXT("OwnerPlayer is NULL"));
+		return FTransform::Identity;
+	}
 	APlayerController* PC = Cast<APlayerController>(OwnerPlayer->GetController());
 	if (!PC)
 	{
@@ -735,6 +811,21 @@ void UJettSkillComponent::DeSpawnOneBladeStorm()
 			return;
 		}
 	}
+}
+
+void UJettSkillComponent::OnFlyStartSoundFinished()
+{
+	if (bPassiveActive && FlyPersistSound)
+	{
+		FlyPersistAudioComponent = UGameplayStatics::SpawnSoundAttached(FlyPersistSound, OwnerPlayer->GetRootComponent());
+
+		if (FlyPersistAudioComponent)
+		{
+			FlyPersistAudioComponent->bIsUISound = false;
+			FlyPersistAudioComponent->Play();
+		}
+	}
+
 }
 
 void UJettSkillComponent::EndSkillUlti()

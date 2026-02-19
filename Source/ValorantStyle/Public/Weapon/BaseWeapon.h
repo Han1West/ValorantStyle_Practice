@@ -53,6 +53,8 @@ public:
 	UFUNCTION(BlueprintPure)
 	bool IsUseAmmo() const;
 
+	void SetOwnerPlayer(class AValorantPlayer* Player) { OwnerPlayer = Player; }
+
 
 public:
 	FVector2D CurrentRecoilOffset = FVector2D::ZeroVector;
@@ -74,6 +76,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Magazine")
 	TSubclassOf<class AMagazine> MagazineClass;
 	
+	UPROPERTY()
+	AValorantPlayer* OwnerPlayer;
+
 	UPROPERTY()
 	AMagazine* CurrentMagazine;
 
@@ -137,6 +142,14 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "VFX")
 	class UNiagaraSystem* TracerEffect;
+	UPROPERTY(EditDefaultsOnly, Category = "VFX")
+	UNiagaraSystem* MuzzleFlashEffect;
+	UPROPERTY(EditDefaultsOnly, Category = "VFX")
+	UNiagaraSystem* BulletSparkEffect;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Decal")
+	class UMaterialInterface* BulletHoleMaterial;
+
 
 protected:
 	virtual bool CanReload() const;

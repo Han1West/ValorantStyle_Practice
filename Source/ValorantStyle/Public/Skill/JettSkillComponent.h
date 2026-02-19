@@ -45,6 +45,9 @@ public:
 
 	void OnBladeKillSuccess();
 
+	UFUNCTION()
+	void OnFlyStartSoundFinished();
+
 private:
 	bool bTailWind = false;
 	
@@ -63,6 +66,26 @@ private:
 	TSubclassOf<class ABladeStorm> BladestormClass;
 	UPROPERTY()
 	TArray<ABladeStorm*> Bladestorms;
+
+	UPROPERTY()
+	USoundBase* FlyStartSound;
+	UPROPERTY()
+	USoundBase* FlyPersistSound;
+	UPROPERTY()
+	USoundBase* DashSound;
+	UPROPERTY()
+	USoundBase* UpdraftSound;
+	UPROPERTY()
+	USoundBase* DrawBladestormSound;	
+	UPROPERTY()
+	USoundBase* ShotBladestormSound;
+	UPROPERTY()
+	USoundBase* ShotAllBladestormSound;
+
+	UPROPERTY()
+	UAudioComponent* FlyPersistAudioComponent;
+	UPROPERTY()
+	UAudioComponent* FlyStartAudioComponent;
 
 	FTimerHandle FireTimerHandle;
 	int32 ActivatedBladestormsCount = 0;

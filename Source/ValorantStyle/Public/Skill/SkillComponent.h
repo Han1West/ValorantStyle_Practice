@@ -35,7 +35,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(
 );
 
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class VALORANTSTYLE_API USkillComponent : public UActorComponent
 {
 	GENERATED_BODY()
@@ -188,6 +188,8 @@ protected:
 
 	bool bUsingSkill = false;
 	bool bDeactivatedPlayerHands = false;
+
+	bool bPassiveActive = false;
 
 	FTimerHandle CastingQHandle;
 	FTimerHandle CastingEHandle;

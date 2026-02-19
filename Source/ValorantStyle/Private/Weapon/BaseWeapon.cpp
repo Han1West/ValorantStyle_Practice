@@ -182,10 +182,13 @@ FVector2D ABaseWeapon::GetCurrentRecoil() const
 	int32 Index = FMath::Min(CurrentShotIndex, SprayPattern.Num() - 1);
 	FVector2D Recoil = SprayPattern[Index];
 
-	// 약간의 미세 랜덤 반동 추가
-	Recoil.X += FMath::RandRange(-0.1f, 01.f);
-	Recoil.Y += FMath::RandRange(0.f, 0.1f);
-
+	// 특정 시점 부터 약간의 미세 랜덤 반동 추가
+	if (Index > 4)
+	{
+		Recoil.X += FMath::RandRange(-0.1f, 01.f);
+		Recoil.Y += FMath::RandRange(0.f, 0.1f);
+	}
+	
 	Recoil *= GetRecoilMultiplier();
 
 	return Recoil;
