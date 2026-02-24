@@ -16,6 +16,8 @@ class VALORANTSTYLE_API AValorantPlayerController : public APlayerController
 protected:
 	virtual void BeginPlay() override;
 
+	virtual void SetupInputComponent() override;
+	
 public:
 	virtual void GameHasEnded(class AActor* EndGameFocus = nullptr, bool bIsWinner = false) override;
 
@@ -25,4 +27,14 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	UUserWidget* HUD;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<class UShopRootWidget> ShopWidgetClass;
+
+	UPROPERTY(VisibleAnywhere)
+	UShopRootWidget* ShopWidgetInstance;
+
+	bool bShopOpen = false;
+private:
+	void ToggleShop();
 };

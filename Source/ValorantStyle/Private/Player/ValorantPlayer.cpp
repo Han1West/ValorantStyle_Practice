@@ -208,6 +208,7 @@ void AValorantPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 	PlayerInputComponent->BindAction(TEXT("PickJett"), IE_Pressed, this, &AValorantPlayer::SetCharaterTypeToJett);
 	PlayerInputComponent->BindAction(TEXT("PickPhoenix"), IE_Pressed, this, &AValorantPlayer::SetCharaterTypeToPhoenix);
 
+	//PlayerInputComponent->BindAction(TEXT("DropWeapon"), IE_Pressed, this, &AValorantPlayer::DropWeapon);
 }
 
 void AValorantPlayer::PlayerGetKill()
@@ -409,6 +410,57 @@ void AValorantPlayer::SetCharaterTypeToPhoenix()
 	SetCharacterType(ECharacterType::Phoenix);
 }
 
+//void AValorantPlayer::DropWeapon()
+//{
+//	// 무기가 없거나 근접무기면 return
+//	if (!CurrentWeapon || CurrentWeaponIdx == 2)
+//	{
+//		return;
+//	}
+//	
+//	ABaseWeapon* WeaponToDrop = CurrentWeapon;
+//	int32 DropIdx = CurrentWeaponIdx;		
+//
+//	// Detach
+//	WeaponToDrop->DetachFromActor(FDetachmentTransformRules::KeepRelativeTransform);
+//	WeaponToDrop->SetDrop(true);
+//
+//	FVector DropLocation = GetActorLocation() + GetActorForwardVector() * 100.f + FVector(0, 0, -30.f);
+//	WeaponToDrop->SetActorLocation(DropLocation);
+//	WeaponToDrop->SetActorRotation(GetActorRotation());
+//	WeaponToDrop->SetActorEnableCollision(true);
+//
+//	if (WeaponToDrop->GetWeaponMesh())
+//	{
+//		UPrimitiveComponent* WeaponMesh = WeaponToDrop->GetWeaponMesh();
+//
+//		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+//		WeaponMesh->SetCollisionObjectType(ECC_PhysicsBody);
+//
+//		WeaponMesh->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+//
+//		WeaponMesh->SetGenerateOverlapEvents(true);
+//		WeaponMesh->SetSimulatePhysics(true);
+//		WeaponMesh->SetEnableGravity(true);
+//
+//		WeaponMesh->SetLinearDamping(2.f);
+//		WeaponMesh->SetAngularDamping(3.f);
+//
+//		FVector Forward = GetActorForwardVector();
+//		FVector Up = FVector::UpVector;
+//
+//		FVector Impulse = (Forward * 300.f) + (Up * 300.f);
+//
+//		WeaponMesh->AddImpulse(Impulse, NAME_None, true);
+//	}
+//
+//	// 해당 무기 자리 nullptr로
+//	CurrentWeapon = nullptr;
+//	Weapons[DropIdx] = nullptr;
+//
+//	EquipWeapon(1);
+//}
+
 void AValorantPlayer::HideHands(bool bChgangeWeapon)
 {
 	bInvisibleHands = true;
@@ -521,26 +573,39 @@ void AValorantPlayer::EquipWeapon(int32 Index)
 		return;
 	}
 
-	if (CurrentWeapon)
-	{
-		CurrentWeapon->SetOwnerPlayer(nullptr);
-		CurrentWeapon->SetWeaponHidden(true);
-		CurrentWeapon->SetActorEnableCollision(false);
-		UE_LOG(LogTemp, Display, TEXT("Hide Weapon"));
-	}
 
 	// 현재 무기를 없앤다
 	if (Index == -1)
 	{
+		if (CurrentWeapon)
+		{
+			CurrentWeapon->SetOwnerPlayer(nullptr);
+			CurrentWeapon->SetWeaponHidden(true);
+			CurrentWeapon->SetActorEnableCollision(false);
+			UE_LOG(LogTemp, Display, TEXT("Hide Weapon"));
+		}
+
 		CurrentWeapon = nullptr;
 	}
+	// 다른 무기로 교체
 	else
 	{
-		bSwapWeapon = true;
-		if (!Weapons.IsValidIndex(Index))
+		// 해당 무기칸이 비어있다면 교체 X
+		if (!Weapons.IsValidIndex(Index) || !Weapons[Index])
 		{
+			UE_LOG(LogTemp, Error, TEXT("Cant Equip Weapon : %d"), Index);
 			return;
 		}
+	
+		if (CurrentWeapon)
+		{
+			CurrentWeapon->SetOwnerPlayer(nullptr);
+			CurrentWeapon->SetWeaponHidden(true);
+			CurrentWeapon->SetActorEnableCollision(false);
+			UE_LOG(LogTemp, Display, TEXT("Hide Weapon"));
+		}
+
+		bSwapWeapon = true;
 		CurrentWeapon = Weapons[Index];
 		CurrentWeapon->SetOwnerPlayer(this);
 		CurrentWeapon->SetWeaponHidden(false);

@@ -77,8 +77,8 @@ public:
 	float GetCurrentShiledPercent() const;
 	UFUNCTION(BlueprintPure)
 	ABaseWeapon* GetCurrentWeapon() const;
-
-
+	UFUNCTION(BlueprintPure)
+	int32 GetCurrentBudget() { return CurrentBudget; }
 
 	class UCameraComponent* GetCameraComponent() const { return CameraComp; }
 
@@ -92,6 +92,8 @@ public:
 	bool IsMoving() { return bMove; }
 	bool IsCrouched() { return bCrouch; }
 	bool IsAirborne();
+
+	
 	// GET SET
 	// 
 
@@ -145,9 +147,10 @@ private:
 
 	void SetCharaterTypeToJett();
 	void SetCharaterTypeToPhoenix();
+	
+	void DropWeapon();
 
-	void SpawnBladestorm();
-	void DeSpawnBladeStorm();
+	//
 	void HideHands(bool bChgangeWeapon);
 	void RevealHands(bool bChangeWeapon);
 	//
@@ -260,6 +263,11 @@ private:
 	float Health = 85;
 	UPROPERTY(VisibleAnywhere)
 	float Shield = 50;
+	UPROPERTY(VisibleAnywhere)
+	int32 MaxBudget = 16000;
+	UPROPERTY(EditAnywhere)
+	int32 CurrentBudget = 5000;
+	 
 
 	class ABotSpawner* BotSpawner = nullptr;
 };
