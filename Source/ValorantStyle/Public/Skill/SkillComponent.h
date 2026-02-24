@@ -91,6 +91,23 @@ public:
 	UTexture2D* GetUltiICon() const { return UltiSkillIconTexture; }
 
 	UFUNCTION(BlueprintPure)
+	FString GetQText() const { return QSkillText; }
+	UFUNCTION(BlueprintPure)
+	FString GetCText() const { return CSkillText; }
+	UFUNCTION(BlueprintPure)
+	FString GetEText() const { return ESkillText; }
+	UFUNCTION(BlueprintPure)
+	FString GetUltiText() const { return UltiSkillText; }
+
+	UFUNCTION(BlueprintPure)
+	int32 GetQPrice() const { return QSkillPrice; }
+	UFUNCTION(BlueprintPure)
+	int32 GetEPrice() const { return ESkillPrice; }
+	UFUNCTION(BlueprintPure)
+	int32 GetCPrice() const { return CSkillPrice; }
+
+
+	UFUNCTION(BlueprintPure)
 	int32 GetSkillMaxQCount() const { return SkillMaxQCount; }
 	UFUNCTION(BlueprintPure)
 	int32 GetSkillQCount() const { return SkillQCount; }
@@ -140,6 +157,15 @@ protected:
 	UPROPERTY()
 	UTexture2D* UltiSkillIconTexture;
 	
+	FString QSkillText;
+	FString ESkillText;
+	FString CSkillText;
+	FString UltiSkillText;
+
+	int32 QSkillPrice = 0;
+	int32 ESkillPrice = 0;
+	int32 CSkillPrice = 0;
+
 	UPROPERTY()
 	ECharacterClass CharacterClass = ECharacterClass::NONE;
 

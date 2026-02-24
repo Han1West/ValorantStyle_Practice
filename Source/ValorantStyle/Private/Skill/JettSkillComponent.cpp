@@ -91,6 +91,15 @@ UJettSkillComponent::UJettSkillComponent()
 	}
 
 
+	QSkillText = TEXT("UPDRAFT");
+	ESkillText = TEXT("TAILWIND");
+	CSkillText = TEXT("CLOUD BURST");
+	UltiSkillText = TEXT("BLADE STROM");
+
+	QSkillPrice = 200;
+	ESkillPrice = 250;
+	CSkillPrice = 100;
+
 	CharacterClass = ECharacterClass::Duelist;
 }
 

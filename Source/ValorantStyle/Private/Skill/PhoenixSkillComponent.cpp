@@ -28,6 +28,15 @@ UPhoenixSkillComponent::UPhoenixSkillComponent()
 		UltiSkillIconTexture = UltiTextureObj.Object;
 	}
 
+	QSkillText = TEXT("HOT HANDS");
+	ESkillText = TEXT("CURVE BALL");
+	CSkillText = TEXT("BLAZE");
+	UltiSkillText = TEXT("RUN IT BACK");
+
+	QSkillPrice = 200;
+	ESkillPrice = 200;
+	CSkillPrice = 300;
+
 	CharacterClass = ECharacterClass::Duelist;
 }
 

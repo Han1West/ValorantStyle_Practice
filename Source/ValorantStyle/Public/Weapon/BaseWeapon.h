@@ -54,7 +54,7 @@ public:
 	bool IsUseAmmo() const;
 
 	void SetOwnerPlayer(class AValorantPlayer* Player) { OwnerPlayer = Player; }
-
+	USkeletalMeshComponent* GetWeaponMesh() const { return Mesh; }
 
 public:
 	FVector2D CurrentRecoilOffset = FVector2D::ZeroVector;
@@ -149,7 +149,6 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Decal")
 	class UMaterialInterface* BulletHoleMaterial;
-
 
 protected:
 	virtual bool CanReload() const;
