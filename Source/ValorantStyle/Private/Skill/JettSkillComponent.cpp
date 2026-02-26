@@ -16,8 +16,8 @@
 
 UJettSkillComponent::UJettSkillComponent()
 {
-	static ConstructorHelpers::FClassFinder<ACloudburst> CloudburstFinder(TEXT("/Game/BP_Cloudburst"));
-	static ConstructorHelpers::FClassFinder<ABladeStorm> BladestormFinder(TEXT("/Game/BP_Bladestorm"));
+	static ConstructorHelpers::FClassFinder<ACloudburst> CloudburstFinder(TEXT("/Game/InGame/GameObject/BP_Cloudburst"));
+	static ConstructorHelpers::FClassFinder<ABladeStorm> BladestormFinder(TEXT("/Game/InGame/GameObject/BP_Bladestorm"));
 
 	static ConstructorHelpers::FObjectFinder<UTexture2D> QTextureObj(TEXT("/Game/UIAsset/Jett_Q"));
 	static ConstructorHelpers::FObjectFinder<UTexture2D> ETextureObj(TEXT("/Game/UIAsset/Jett_E"));
