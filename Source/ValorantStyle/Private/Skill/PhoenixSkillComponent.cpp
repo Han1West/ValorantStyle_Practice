@@ -43,13 +43,13 @@ UPhoenixSkillComponent::UPhoenixSkillComponent()
 void UPhoenixSkillComponent::BeginPlay()
 {
 	SkillMaxQCount = 1;
-	SkillQCount = 1;
+	SkillQCount = 0;
 
 	SkillMaxECount = 2;
-	SkillECount = 2;
+	SkillECount = 1;
 
 	SkillMaxCCount = 1;
-	SkillCCount = 1;
+	SkillCCount = 0;
 
 	NeedUltimateCount = 6;
 	CurrentUltimateCount = 0;

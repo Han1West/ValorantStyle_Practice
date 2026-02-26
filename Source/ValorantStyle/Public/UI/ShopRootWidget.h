@@ -25,9 +25,9 @@ public:
 protected:
 	//UGridSlot* AddCategoryHeader(const FString& Title, int32 Row, int32 col);
 	
-	UShopItemSlotWidget* AddSlotToOverlay(UOverlay* TargetOverlay, UTexture2D* Icon, const FString& Name, int32 Price, EShopItemType Type, bool CanBuy);
-	UShopItemSlotWidget* AddShieldSlotToOverlay(UOverlay* TargetOverlay, UTexture2D* Icon, const FString& Name, int32 Price, EShopItemType Type, bool CanBuy);
-	UShopItemSlotWidget* AddSkillSlotToOverlay(UOverlay* TargetOverlay, UTexture2D* Icon, const FString& Name, int32 Price, EShopItemType Type, const FString& SkilBaseName, bool CanBuy, int32 SkillMaxCount = 0, int32 SkillCurCount = 0);
+	UShopItemSlotWidget* AddSlotToOverlay(UOverlay* TargetOverlay, UTexture2D* Icon, const FString& Name, int32 Price, EShopItemType Type);
+	UShopItemSlotWidget* AddShieldSlotToOverlay(UOverlay* TargetOverlay, UTexture2D* Icon, const FString& Name, int32 Price, EShopItemType Type);
+	UShopItemSlotWidget* AddSkillSlotToOverlay(UOverlay* TargetOverlay, UTexture2D* Icon, const FString& Name, int32 Price, EShopItemType Type, const FString& SkilBaseName, int32 SkillMaxCount = 0, int32 SkillCurCount = 0);
 
 private:
 	void ClearAllOverlay();

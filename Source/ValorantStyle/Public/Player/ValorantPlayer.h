@@ -38,6 +38,8 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEquipmentChanged);
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnCharacterChanged);
+
 UCLASS()
 class VALORANTSTYLE_API AValorantPlayer : public ACharacter
 {
@@ -111,7 +113,7 @@ public:
 	bool IsCrouched() { return bCrouch; }
 	bool IsAirborne();
 
-	
+	void SetCharacterType(ECharacterType Type);
 	// GET SET
 	// 
 
@@ -128,6 +130,9 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FOnEquipmentChanged OnEquipmentChanged;
 
+	UPROPERTY(BlueprintAssignable)
+	FOnCharacterChanged OnCharacterSelectChanged;
+
 	void PlayerGetKill();
 	void SetHandMeshRelativeLocationRotaiton(const FVector& Location, const FRotator& Rotation);
 	void BuyItem(const FString& ItemName, int32 Price);
@@ -138,6 +143,7 @@ public:
 	// 아이템이 착용중이고 팔 수 있는 상태인지
 	bool IsItemCanSelled(const FString& ItemName, EShopItemType ItemType);
 	
+	void SelectCharacter();
 
 private:
 	void AdjustSpeed();
@@ -173,9 +179,6 @@ private:
 	void UseWeaponSubAbility();
 	void ReleaseWeaponSubAbility();
 
-	void SetCharaterTypeToJett();
-	void SetCharaterTypeToPhoenix();
-
 	//
 	void HideHands(bool bChgangeWeapon);
 	void RevealHands(bool bChangeWeapon);
@@ -189,8 +192,6 @@ private:
 	void SelectWeapon1(); 
 
 	void ApplyRecoil(float DeltaTime);
-
-	void SetCharacterType(ECharacterType Type);
 
 	void PlayFootstep();
 	void StopFootstep();

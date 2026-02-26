@@ -21,6 +21,8 @@ protected:
 public:
 	virtual void GameHasEnded(class AActor* EndGameFocus = nullptr, bool bIsWinner = false) override;
 
+	void ToggleShop();
+	void ToggleCharacterSelect();
 private:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UUserWidget> HUDClass;
@@ -34,7 +36,12 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	UShopRootWidget* ShopWidgetInstance;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<class UCharacterSelectRootWidget> CharacterSelectClass;
+
+	UPROPERTY(VisibleAnywhere)
+	UCharacterSelectRootWidget* CharacterSelectWidgetInstance;
+
 	bool bShopOpen = false;
-private:
-	void ToggleShop();
+	bool bCharacterSelectOpen = false;
 };

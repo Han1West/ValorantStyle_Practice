@@ -85,11 +85,11 @@ void AValorantPlayer::BeginPlay()
 
 	BotSpawner = Cast<ABotSpawner>(UGameplayStatics::GetActorOfClass(GetWorld(), ABotSpawner::StaticClass()));
 
-	GetWorld()->GetTimerManager().SetTimerForNextTick(this, &AValorantPlayer::SetCharaterTypeToJett);
-
 	FootstepAudio = UGameplayStatics::SpawnSoundAttached(FootstepSound, GetRootComponent());
 
 	FootstepAudio->Stop();
+
+	SetCharacterType(ECharacterType::Jett);
 }
 
 void AValorantPlayer::Landed(const FHitResult& Hit)
@@ -476,6 +476,11 @@ bool AValorantPlayer::IsItemCanSelled(const FString& ItemName, EShopItemType Ite
 	return false;
 }
 
+void AValorantPlayer::SelectCharacter()
+{
+	OnCharacterSelectChanged.Broadcast();
+}
+
 bool AValorantPlayer::IsItemEquipped(const FString& ItemName, EShopItemType ItemType)
 {	
 	switch (ItemType)
@@ -716,18 +721,6 @@ void AValorantPlayer::ReleaseWeaponSubAbility()
 		SkillComponent->ReleaseMouseRBTN();
 	}
 	bSubWeapon = false;
-}
-
-void AValorantPlayer::SetCharaterTypeToJett()
-{
-	UE_LOG(LogTemp, Warning, TEXT("Characher Changed to Jett !!"));
-	SetCharacterType(ECharacterType::Jett);
-}
-
-void AValorantPlayer::SetCharaterTypeToPhoenix()
-{
-	UE_LOG(LogTemp, Warning, TEXT("Characher Changed to Phoenix !!"));
-	SetCharacterType(ECharacterType::Phoenix);
 }
 
 //void AValorantPlayer::DropWeapon()
