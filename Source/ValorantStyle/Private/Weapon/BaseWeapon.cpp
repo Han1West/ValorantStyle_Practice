@@ -69,6 +69,12 @@ void ABaseWeapon::EndReload()
 {
 
 }
+
+void ABaseWeapon::StopReload()
+{
+
+}
+
 void ABaseWeapon::AllAnimEndReload()
 {
 

@@ -790,6 +790,7 @@ void AValorantPlayer::HideHands(bool bChgangeWeapon)
 		return;
 	}
 
+	StopReload();
 	// 현재의 armmesh를 숨긴다.
 	ArmsMesh->SetHiddenInGame(true);
 	CurrentWeapon->SetActorHiddenInGame(true);
@@ -880,6 +881,7 @@ void AValorantPlayer::EquipWeapon(int32 Index)
 {
 	// 무기와 관련된 모든 조건을 꺼준다.
 	TurnOffAllCondition();
+	StopReload();
 
 	if (CurrentWeaponIdx == Index && !bInvisibleHands)
 	{
@@ -963,6 +965,34 @@ void AValorantPlayer::TakeReload()
 	if (!Anim->Montage_IsPlaying(ReloadMontage))
 	{
 		Anim->Montage_Play(ReloadMontage);
+	}
+}
+
+void AValorantPlayer::StopReload()
+{
+	UAnimInstance* Anim = ArmsMesh->GetAnimInstance();
+	if (!Anim || !ReloadMontage)
+	{
+		return;
+	}
+
+	if (!CurrentMagazine)
+	{
+		return;
+	}
+	if (!CurrentWeapon)
+	{
+		return;
+	}
+
+	// 새로운 탄창 비 활성화
+	CurrentMagazine->SetActorHiddenInGame(true);
+	CurrentWeapon->StopReload();
+
+	// Reload 애니메이션 몽타주 정지
+	if (Anim->Montage_IsPlaying(ReloadMontage))
+	{
+		Anim->Montage_Stop(0.f, ReloadMontage);
 	}
 }
 

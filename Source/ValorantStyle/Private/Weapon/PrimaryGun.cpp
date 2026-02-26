@@ -81,6 +81,15 @@ void APrimaryGun::EndReload()
 	curleftAmmo -= usedAmmo;
 }
 
+void APrimaryGun::StopReload()
+{
+	if (!CurrentMagazine) return;
+
+	CurrentMagazine->SetActorHiddenInGame(false);
+
+	AllAnimEndReload();
+}
+
 void APrimaryGun::AllAnimEndReload()
 {
 	WeaponState = EWeaponState::Idle;
