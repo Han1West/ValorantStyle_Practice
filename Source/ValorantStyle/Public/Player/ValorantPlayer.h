@@ -183,6 +183,7 @@ private:
 
 	void EquipWeapon(int32 Index);
 	void TakeReload();		
+	void StopReload();
 
 	void SelectWeapon0(); 
 	void SelectWeapon1(); 

@@ -30,6 +30,7 @@ public:
 
 	virtual void StartReload() override;
 	virtual void EndReload() override;
+	virtual void StopReload() override;
 	virtual void AllAnimEndReload() override;
 
 	virtual void SetPullTrigger(bool Pull) override;

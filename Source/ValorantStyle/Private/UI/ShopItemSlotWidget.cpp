@@ -96,14 +96,6 @@ void UShopItemSlotWidget::SetWeaponItemData(UTexture2D* Icon, const FString& Nam
 	ItemPrice = Price;
 }
 
-void UShopItemSlotWidget::SetSlotEnabled(bool bEnabled)
-{
-	if (ItemButton)
-	{
-		ItemButton->SetIsEnabled(bEnabled);		
-	}
-}
-
 
 void UShopItemSlotWidget::OnItemClicked()
 {
@@ -117,6 +109,11 @@ void UShopItemSlotWidget::OnItemClicked()
 		UE_LOG(LogTemp, Warning, TEXT("Need More Credit!"));
 		return;
 	}
+	if (bEnabled)
+	{
+		return;
+	}
+
 
 	UE_LOG(LogTemp, Warning, TEXT("Item Clicekd"));
 	// 스킬의 경우 최대개수가 안넘으면 구매 가능
@@ -190,6 +187,7 @@ void UShopItemSlotWidget::RefreshStateSkills()
 	{
 		UE_LOG(LogTemp, Display, TEXT("bEquipped : %s"), *ItemName);
 		ItemButton->SetStyle(EqquippedStyle);
+		bEnabled = false;
 	}
 	else
 	{
@@ -197,16 +195,19 @@ void UShopItemSlotWidget::RefreshStateSkills()
 		if (ItemType == EShopItemType::Weapon && ItemName != "VANDAL")
 		{
 			ItemButton->SetStyle(UnenabledStyle);
+			bEnabled = true;
 			return;
 		}
 
 		if (Player->GetCurrentBudget() < ItemPrice)
 		{
 			ItemButton->SetStyle(UnenabledStyle);
+			bEnabled = true;
 		}
 		else
 		{
 			ItemButton->SetStyle(NormalStyle);
+			bEnabled = false;
 		}
 	}
 
@@ -240,6 +241,7 @@ void UShopItemSlotWidget::RefreshStateOthers()
 	{
 		UE_LOG(LogTemp, Display, TEXT("bEquipped : %s"), *ItemName);
 		ItemButton->SetStyle(EqquippedStyle);
+		bEnabled = false;
 	}
 	else
 	{
@@ -247,16 +249,19 @@ void UShopItemSlotWidget::RefreshStateOthers()
 		if (ItemType == EShopItemType::Weapon && ItemName != "VANDAL")
 		{
 			ItemButton->SetStyle(UnenabledStyle);
+			bEnabled = true;
 			return;
 		}
 
 		if (Player->GetCurrentBudget() < ItemPrice)
 		{
 			ItemButton->SetStyle(UnenabledStyle);
+			bEnabled = true;
 		}
 		else
 		{
 			ItemButton->SetStyle(NormalStyle);
+			bEnabled = false;
 		}
 	}
 }

@@ -33,8 +33,6 @@ public:
 	void SetSkillItemData(UTexture2D* Icon, const FString& Name, int32 Price, EShopItemType Type, const FString& BaseSkillName);
 	void SetWeaponItemData(UTexture2D* Icon, const FString& Name, int32 Price, EShopItemType Type);
 
-	void SetSlotEnabled(bool bEnabled);
-
 	void SetSkillMaxCount(int32 SkillCount) { SkillMaxCount = SkillCount; }
 	void SetSkillCurCount(int32 SkillCount) { SkillCurCount = SkillCount; }
 
@@ -69,7 +67,7 @@ protected:
 	int32 ItemPrice = 0;
 
 	EShopItemType ItemType = EShopItemType::NONE;
-	bool bCanBuy = true;
+	bool bEnabled = false;
 
 protected:
 	virtual void NativeConstruct() override;
