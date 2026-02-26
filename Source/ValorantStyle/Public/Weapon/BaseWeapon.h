@@ -48,7 +48,13 @@ public:
 	int32 GetCurrentAmmo() const;
 
 	UFUNCTION(BlueprintPure)
-	int32 GetLeftAmmo() const;
+	int32 GetMaxAmmo() const;
+
+	UFUNCTION(BlueprintPure)
+	int32 GetCurrentLeftAmmo() const;
+
+	UFUNCTION(BlueprintPure)
+	int32 GetMaxLeftAmmo() const;
 
 	UFUNCTION(BlueprintPure)
 	bool IsUseAmmo() const;
@@ -85,9 +91,11 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	int32 maxAmmo = 0;
 	UPROPERTY(VisibleAnywhere)
-	int32 leftAmmo = 0;
-	UPROPERTY(VisibleAnywhere)
 	int32 curAmmo = 0;
+	UPROPERTY(VisibleAnywhere)
+	int32 maxleftAmmo = 0;
+	UPROPERTY(VisibleAnywhere)
+	int32 curleftAmmo = 0;
 	UPROPERTY(VisibleAnywhere)
 	bool bUseAmmo = false;
 

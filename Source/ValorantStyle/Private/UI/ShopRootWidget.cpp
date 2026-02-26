@@ -18,7 +18,11 @@ void UShopRootWidget::InitializeShop()
 	{
 		return;
 	}
+	AValorantPlayer* Player = GetOwningPlayerPawn<AValorantPlayer>();
+	if (!Player) return;
 
+	Player->OnEquipmentChanged.RemoveDynamic(this, &UShopRootWidget::RefreshAllSlots);
+	Player->OnEquipmentChanged.AddDynamic(this, &UShopRootWidget::RefreshAllSlots);
 
 
 	ClearAllOverlay();
@@ -26,10 +30,12 @@ void UShopRootWidget::InitializeShop()
 	IntializeSkillOverlay();
 	IntializeWeaponOverlay();
 	IntializeShiledOverlay();	
+
+	RefreshAllSlots();
 }
 
 
-UShopItemSlotWidget* UShopRootWidget::AddSlotToOverlay(UOverlay* TargetOverlay, UTexture2D* Icon, const FString& Name, int32 Price, EShopItemType Type)
+UShopItemSlotWidget* UShopRootWidget::AddSlotToOverlay(UOverlay* TargetOverlay, UTexture2D* Icon, const FString& Name, int32 Price, EShopItemType Type, bool CanBuy)
 {
 	if (!TargetOverlay)
 	{
@@ -46,20 +52,11 @@ UShopItemSlotWidget* UShopRootWidget::AddSlotToOverlay(UOverlay* TargetOverlay, 
 	}
 
 	Item->SetWeaponItemData(Icon, Name, Price, Type);
-
-	if (PlayerBudget < Price)
-	{
-		Item->SetSlotEnabled(false);
-	}
-	else
-	{
-		Item->SetSlotEnabled(true);
-	}
-	
+	Slots.Add(Item);
 	return Item;
 }
 
-UShopItemSlotWidget* UShopRootWidget::AddShieldSlotToOverlay(UOverlay* TargetOverlay, UTexture2D* Icon, const FString& Name, int32 Price, EShopItemType Type)
+UShopItemSlotWidget* UShopRootWidget::AddShieldSlotToOverlay(UOverlay* TargetOverlay, UTexture2D* Icon, const FString& Name, int32 Price, EShopItemType Type, bool CanBuy)
 {
 	if (!TargetOverlay)
 	{
@@ -76,21 +73,12 @@ UShopItemSlotWidget* UShopRootWidget::AddShieldSlotToOverlay(UOverlay* TargetOve
 	}
 
 	Item->SetItemData(Icon, Name, Price, Type);
-
-	if (PlayerBudget < Price)
-	{
-		Item->SetSlotEnabled(false);
-	}
-	else
-	{
-		Item->SetSlotEnabled(true);
-	}
-
+	Slots.Add(Item);
 	return Item;
 }
 
 
-UShopItemSlotWidget* UShopRootWidget::AddSkillSlotToOverlay(UOverlay* TargetOverlay, UTexture2D* Icon, const FString& Name, int32 Price, EShopItemType Type, int32 SkillMaxCount, int32 SkillCurCount)
+UShopItemSlotWidget* UShopRootWidget::AddSkillSlotToOverlay(UOverlay* TargetOverlay, UTexture2D* Icon, const FString& Name, int32 Price, EShopItemType Type, const FString& SkilBaseName, bool CanBuy, int32 SkillMaxCount, int32 SkillCurCount)
 {
 	if (!TargetOverlay)
 	{
@@ -106,7 +94,7 @@ UShopItemSlotWidget* UShopRootWidget::AddSkillSlotToOverlay(UOverlay* TargetOver
 		NewSlot->SetVerticalAlignment(VAlign_Fill);
 	}
 
-	Item->SetItemData(Icon, Name, Price, Type);
+	Item->SetSkillItemData(Icon, Name, Price, Type, SkilBaseName);
 
 	if (SkillMaxCount != 0)
 	{
@@ -114,16 +102,7 @@ UShopItemSlotWidget* UShopRootWidget::AddSkillSlotToOverlay(UOverlay* TargetOver
 		Item->SetSkillCurCount(SkillCurCount);
 	}
 
-	if (PlayerBudget < Price || SkillCurCount >= SkillMaxCount )
-	{
-		Item->SetSlotEnabled(false);
-	}
-	else
-	{
-		Item->SetSlotEnabled(true);
-	}
-
-
+	Slots.Add(Item);
 	return Item;
 }
 
@@ -165,110 +144,127 @@ void UShopRootWidget::IntializeWeaponOverlay()
 		ClassicOverlay,
 		ClassicIcon,
 		TEXT("CALSSIC"),
-		29000,
-		EShopItemType::Weapon);
+		0,
+		EShopItemType::Weapon,
+		false);
 	AddSlotToOverlay(
 		ShortyOverlay,
 		ShortyIcon,
 		TEXT("SHORTY"),
-		29000,
-		EShopItemType::Weapon);
+		300,
+		EShopItemType::Weapon,
+		false);
 	AddSlotToOverlay(
 		FrenzyOverlay,
 		FrenzyIcon,
 		TEXT("FRENZY"),
-		29000,
-		EShopItemType::Weapon);
+		450,
+		EShopItemType::Weapon,
+		false);
 	AddSlotToOverlay(
 		GhostOverlay,
 		GhostIcon,
 		TEXT("Ghost"),
-		29000,
-		EShopItemType::Weapon);
+		500,
+		EShopItemType::Weapon,
+		false);
 	AddSlotToOverlay(
 		SheriffOverlay,
 		SheriffIcon,
 		TEXT("SHERIFF"),
-		29000,
-		EShopItemType::Weapon);
+		800,
+		EShopItemType::Weapon,
+		false);
 
 	// SMGS & SHOTGUN
 	AddSlotToOverlay(
 		StingerOverlay,
 		StingerIcon,
 		TEXT("STINGER"),
-		29000,
-		EShopItemType::Weapon);
+		1100,
+		EShopItemType::Weapon,
+		false);
 	AddSlotToOverlay(
 		SpectreOverlay,
 		SpectreIcon,
 		TEXT("SPECTRE"),
-		29000,
-		EShopItemType::Weapon);
+		1600,
+		EShopItemType::Weapon,
+		false);
 	AddSlotToOverlay(
 		BuckyOverlay,
 		BuckyIcon,
 		TEXT("BUCKY"),
-		29000,
-		EShopItemType::Weapon);
+		850,
+		EShopItemType::Weapon,
+		false);
 	AddSlotToOverlay(
 		JudgeOverlay,
 		JudgeIcon,
 		TEXT("JUDGE"),
-		29000,
-		EShopItemType::Weapon);
+		1850,
+		EShopItemType::Weapon,
+		false);
 
 	// RIFLES
 	AddSlotToOverlay(
 		BulldogOverlay,
 		BulldogIcon,
 		TEXT("BULLDOG"),
-		29000,
-		EShopItemType::Weapon);
+		2050,
+		EShopItemType::Weapon,
+		false);
 	AddSlotToOverlay(
 		GuardianOverlay,
 		GuardianIcon,
 		TEXT("GUARDIAN"),
-		29000,
-		EShopItemType::Weapon);
+		2250,
+		EShopItemType::Weapon,
+		false);
 	AddSlotToOverlay(
 		PhantomOverlay,
 		PhantomIcon,
 		TEXT("PHANTOM"),
-		29000,
-		EShopItemType::Weapon);
+		2900,
+		EShopItemType::Weapon,
+		false);
 	AddSlotToOverlay(
 		VandalOverlay,
 		VandalIcon,
 		TEXT("VANDAL"),
 		2900,
-		EShopItemType::Weapon);
+		EShopItemType::Weapon,
+		2900 <= PlayerBudget);
 
 	// SNIPER & MACHINEGUN
 	AddSlotToOverlay(
 		MarshalOverlay,
 		MarshalIcon,
 		TEXT("MARSHAL"),
-		29000,
-		EShopItemType::Weapon);
+		950,
+		EShopItemType::Weapon,
+		false);
 	AddSlotToOverlay(
 		OperatorOverlay,
 		OperatorIcon,
 		TEXT("OPERATOR"),
-		29000,
-		EShopItemType::Weapon);
+		4700,
+		EShopItemType::Weapon,
+		false);
 	AddSlotToOverlay(
 		AresOverlay,
 		AresIcon,
 		TEXT("Ares"),
-		29000,
-		EShopItemType::Weapon);
+		1600,
+		EShopItemType::Weapon,
+		false);
 	AddSlotToOverlay(
 		OdinOverlay,
 		OdinIcon,
 		TEXT("ODIN"),
-		29000,
-		EShopItemType::Weapon);
+		3200,
+		EShopItemType::Weapon,
+		false);
 }
 
 void UShopRootWidget::IntializeShiledOverlay()
@@ -278,14 +274,16 @@ void UShopRootWidget::IntializeShiledOverlay()
 		LightShieldIcon,
 		TEXT("LIGHT SHIELD"),
 		400,
-		EShopItemType::Shield);
+		EShopItemType::Shield,
+		PlayerBudget >= 400);
 
 	AddShieldSlotToOverlay(
 		HeavyShieldOverlay,
 		HeavyShieldIcon,
 		TEXT("HEAVY SHIELD"),
 		1000,
-		EShopItemType::Shield);
+		EShopItemType::Shield,
+		PlayerBudget >= 1000);
 }
 
 void UShopRootWidget::IntializeSkillOverlay()
@@ -311,6 +309,8 @@ void UShopRootWidget::IntializeSkillOverlay()
 		SkillComp->GetQText(),
 		SkillComp->GetQPrice(),
 		EShopItemType::Skill,
+		TEXT("SKILL Q"),
+		PlayerBudget >= SkillComp->GetQPrice(),
 		SkillComp->GetSkillMaxQCount(),
 		SkillComp->GetSkillQCount());
 
@@ -320,6 +320,8 @@ void UShopRootWidget::IntializeSkillOverlay()
 		SkillComp->GetEText(),
 		SkillComp->GetEPrice(),
 		EShopItemType::Skill,
+		TEXT("SKILL E"),
+		PlayerBudget >= SkillComp->GetEPrice(),
 		SkillComp->GetSkillMaxECount(),
 		SkillComp->GetSkillECount());
 
@@ -329,6 +331,16 @@ void UShopRootWidget::IntializeSkillOverlay()
 		SkillComp->GetCText(),
 		SkillComp->GetCPrice(),
 		EShopItemType::Skill,
+		TEXT("SKILL C"),
+		PlayerBudget >= SkillComp->GetCPrice(),
 		SkillComp->GetSkillMaxCCount(),
 		SkillComp->GetSkillCCount());
+}
+
+void UShopRootWidget::RefreshAllSlots()
+{
+	for (UShopItemSlotWidget* CurSlot : Slots)
+	{
+		CurSlot->RefreshState();
+	}
 }

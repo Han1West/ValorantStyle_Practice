@@ -99,9 +99,19 @@ int32 ABaseWeapon::GetCurrentAmmo() const
 	return curAmmo;
 }
 
-int32 ABaseWeapon::GetLeftAmmo() const
+int32 ABaseWeapon::GetMaxAmmo() const
 {
-	return leftAmmo;
+	return maxAmmo;
+}
+
+int32 ABaseWeapon::GetCurrentLeftAmmo() const
+{
+	return curleftAmmo;
+}
+
+int32 ABaseWeapon::GetMaxLeftAmmo() const
+{
+	return maxleftAmmo;
 }
 
 bool ABaseWeapon::IsUseAmmo() const
@@ -112,7 +122,7 @@ bool ABaseWeapon::IsUseAmmo() const
 
 bool ABaseWeapon::CanReload() const
 {	
-	return curAmmo < maxAmmo && 0 < leftAmmo;
+	return curAmmo < maxAmmo && 0 < curleftAmmo;
 }
 
 void ABaseWeapon::OnReloadStart()

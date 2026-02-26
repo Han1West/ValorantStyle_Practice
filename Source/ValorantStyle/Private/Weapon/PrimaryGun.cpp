@@ -25,8 +25,9 @@ void APrimaryGun::BeginPlay()
 	Super::BeginPlay();
 
 	maxAmmo = 25;
-	curAmmo = 20;
-	leftAmmo = 75;
+	curAmmo = 25;
+	curleftAmmo = 75;
+	maxleftAmmo = 75;
 	bUseAmmo = true;
 
 	TriggerDelayTime = 0.1f;
@@ -74,10 +75,10 @@ void APrimaryGun::EndReload()
 	CurrentMagazine->SetActorHiddenInGame(false);
 
 	int32 needAmmo = maxAmmo - curAmmo;
-	int32 usedAmmo = FMath::Min(needAmmo, leftAmmo);
+	int32 usedAmmo = FMath::Min(needAmmo, curleftAmmo);
 
 	curAmmo += usedAmmo;
-	leftAmmo -= usedAmmo;
+	curleftAmmo -= usedAmmo;
 }
 
 void APrimaryGun::AllAnimEndReload()

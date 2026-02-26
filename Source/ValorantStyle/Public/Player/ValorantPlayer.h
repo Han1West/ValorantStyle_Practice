@@ -13,12 +13,30 @@ enum class ECharacterType
 	NONE,
 };
 
+
 class ABaseWeapon;
+enum class EShopItemType : uint8;
+
+struct PlayerEquipment
+{
+	// 무기
+	FString EquippedPrimary = TEXT("NONE");
+	ABaseWeapon* Primary = nullptr;
+	int32 PrimaryPrice = 0;
+
+	// 쉴드
+	FString EquippedShield = TEXT("NONE");
+	int32 MaxShield = 0;
+	int32 CurrentShield = 0;
+	int32 ShieldPrice = 0;
+};
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(
 	FOnSkillComponentChanged,
 	USkillComponent*, NewSkillComponent
 );
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEquipmentChanged);
 
 UCLASS()
 class VALORANTSTYLE_API AValorantPlayer : public ACharacter
@@ -107,9 +125,19 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FOnSkillComponentChanged OnSkillComponentChanged;
 
+	UPROPERTY(BlueprintAssignable)
+	FOnEquipmentChanged OnEquipmentChanged;
+
 	void PlayerGetKill();
 	void SetHandMeshRelativeLocationRotaiton(const FVector& Location, const FRotator& Rotation);
+	void BuyItem(const FString& ItemName, int32 Price);
+	void ResellItem(const FString& ItemName, int32 Price);
 
+	// 단순히 현재 아이템을 착용중인지
+	bool IsItemEquipped(const FString& ItemName, EShopItemType ItemType);
+	// 아이템이 착용중이고 팔 수 있는 상태인지
+	bool IsItemCanSelled(const FString& ItemName, EShopItemType ItemType);
+	
 
 private:
 	void AdjustSpeed();
@@ -147,8 +175,6 @@ private:
 
 	void SetCharaterTypeToJett();
 	void SetCharaterTypeToPhoenix();
-	
-	void DropWeapon();
 
 	//
 	void HideHands(bool bChgangeWeapon);
@@ -167,6 +193,8 @@ private:
 
 	void PlayFootstep();
 	void StopFootstep();
+	
+	void SubShield();
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "FPS", meta = (AllowPrivateAccess = "true"))
@@ -248,7 +276,9 @@ private:
 
 	FVector AdjustLocation;
 	FRotator AdjustRotation;
-
+		
+	PlayerEquipment CurrentPlayerEquipment;	
+	PlayerEquipment PrevPlayerEquipment;
 
 private:
 	float OriginMaxSpeed = 0.f;
@@ -257,12 +287,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	float MaxHealth = 100;
-	UPROPERTY(EditDefaultsOnly)
-	float MaxShield = 50;
 	UPROPERTY(VisibleAnywhere)
-	float Health = 85;
-	UPROPERTY(VisibleAnywhere)
-	float Shield = 50;
+	float Health = 100;
+
 	UPROPERTY(VisibleAnywhere)
 	int32 MaxBudget = 16000;
 	UPROPERTY(EditAnywhere)
