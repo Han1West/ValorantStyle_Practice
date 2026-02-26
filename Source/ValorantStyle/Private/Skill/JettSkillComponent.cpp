@@ -108,13 +108,13 @@ void UJettSkillComponent::BeginPlay()
 	bPassive = true;
 
 	SkillMaxQCount = 1;
-	SkillQCount = 1;
+	SkillQCount = 0;
 
 	SkillMaxECount = 1;
 	SkillECount = 1;
 
 	SkillMaxCCount = 2;
-	SkillCCount = 2;
+	SkillCCount = 0;
 
 	NeedUltimateCount = 7;
 	CurrentUltimateCount = 0;

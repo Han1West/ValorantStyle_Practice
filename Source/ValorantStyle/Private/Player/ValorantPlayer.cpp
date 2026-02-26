@@ -10,6 +10,7 @@
 #include "Skill/SkillComponent.h"
 #include "Skill/JettSkillComponent.h"
 #include "Skill/PhoenixSkillComponent.h"
+#include "UI/ShopItemSlotWidget.h"
 
 #include "Kismet/GameplayStatics.h"
 #include "Components/AudioComponent.h"
@@ -46,24 +47,24 @@ void AValorantPlayer::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// 무기들 미리 소환
+	// 근접 무기만 미리 소환
 	for (int i = 0; i < WeaponClasses.Num(); ++i)
 	{
-		ABaseWeapon* NewWeapon = GetWorld()->SpawnActor<ABaseWeapon>(WeaponClasses[i]);
+		
 		if (i == 0)
 		{
-			NewWeapon->AttachToComponent(ArmsMesh, FAttachmentTransformRules::KeepRelativeTransform, TEXT("Gun_Socket"));
+			Weapons.Add(nullptr);
 		}
 		else
 		{
+			ABaseWeapon* NewWeapon = GetWorld()->SpawnActor<ABaseWeapon>(WeaponClasses[i]);
 			NewWeapon->AttachToComponent(ArmsMesh, FAttachmentTransformRules::KeepRelativeTransform, TEXT("Melee_Socket"));
-		}
-		NewWeapon->SetOwner(this);
+			NewWeapon->SetOwner(this);
 
-		NewWeapon->SetWeaponHidden(true);
-		NewWeapon->SetActorEnableCollision(false);
-
-		Weapons.Add(NewWeapon);
+			NewWeapon->SetWeaponHidden(true);
+			NewWeapon->SetActorEnableCollision(false);
+			Weapons.Add(NewWeapon);
+		}		
 	}
 
 	CurrentMagazine = GetWorld()->SpawnActor<AMagazine>(MagazineClass);
@@ -89,7 +90,6 @@ void AValorantPlayer::BeginPlay()
 	FootstepAudio = UGameplayStatics::SpawnSoundAttached(FootstepSound, GetRootComponent());
 
 	FootstepAudio->Stop();
-
 }
 
 void AValorantPlayer::Landed(const FHitResult& Hit)
@@ -208,6 +208,8 @@ void AValorantPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 	PlayerInputComponent->BindAction(TEXT("PickJett"), IE_Pressed, this, &AValorantPlayer::SetCharaterTypeToJett);
 	PlayerInputComponent->BindAction(TEXT("PickPhoenix"), IE_Pressed, this, &AValorantPlayer::SetCharaterTypeToPhoenix);
 
+	PlayerInputComponent->BindAction(TEXT("SubShield"), IE_Pressed, this, &AValorantPlayer::SubShield);
+
 	//PlayerInputComponent->BindAction(TEXT("DropWeapon"), IE_Pressed, this, &AValorantPlayer::DropWeapon);
 }
 
@@ -221,6 +223,324 @@ void AValorantPlayer::SetHandMeshRelativeLocationRotaiton(const FVector& Locatio
 {
 	FPView->SetRelativeLocation(AdjustLocation + Location);
 	FPView->SetRelativeRotation(AdjustRotation + Rotation);
+}
+
+void AValorantPlayer::BuyItem(const FString& ItemName, int32 Price)
+{
+	CurrentBudget -= Price;
+
+	// 이전 자리에 있던 아이템 기억 -> Resell에서 되돌려준다.
+
+	if (ItemName == "VANDAL")
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Buy Vandal"));
+
+		// 이전 무기 정보 저장
+		PrevPlayerEquipment.EquippedPrimary = CurrentPlayerEquipment.EquippedPrimary;
+		PrevPlayerEquipment.Primary = CurrentPlayerEquipment.Primary;
+		PrevPlayerEquipment.PrimaryPrice = CurrentPlayerEquipment.PrimaryPrice;
+
+		// 현재 아이템을 사용하지 않은 상태면 판매
+		if (IsItemCanSelled(CurrentPlayerEquipment.EquippedPrimary, EShopItemType::Weapon))
+		{
+			ResellItem(CurrentPlayerEquipment.EquippedPrimary, CurrentPlayerEquipment.PrimaryPrice);
+		}
+		// 현재 아이템이 장착중이지만 사용했다면 (새로운 무기로)
+		else if (IsItemEquipped(CurrentPlayerEquipment.EquippedPrimary, EShopItemType::Weapon))
+		{
+			EquipWeapon(1);
+			Weapons[0] = nullptr;
+		}
+	
+		// 무기 소환
+		ABaseWeapon* NewWeapon = GetWorld()->SpawnActor<ABaseWeapon>(WeaponClasses[0]);
+		NewWeapon->AttachToComponent(ArmsMesh, FAttachmentTransformRules::KeepRelativeTransform, TEXT("Gun_Socket"));
+		NewWeapon->SetOwner(this);
+		NewWeapon->SetWeaponHidden(true);
+		NewWeapon->SetActorEnableCollision(false);
+		Weapons[0] = NewWeapon;
+
+		// 구입한 무기 정보 저장
+		CurrentPlayerEquipment.EquippedPrimary = TEXT("VANDAL");
+		CurrentPlayerEquipment.Primary = NewWeapon;
+		CurrentPlayerEquipment.PrimaryPrice = Price;
+
+		// 현재 무기 바로 장착
+		EquipWeapon(0);
+	}
+	
+	if (ItemName == "Light Shield")
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Buy Light Shield"));
+
+		// 현재 아이템들을 이전의 아이템으로 기억한다
+		PrevPlayerEquipment.EquippedShield = CurrentPlayerEquipment.EquippedShield;
+
+		PrevPlayerEquipment.MaxShield = CurrentPlayerEquipment.MaxShield;
+		PrevPlayerEquipment.CurrentShield = CurrentPlayerEquipment.CurrentShield;
+		PrevPlayerEquipment.ShieldPrice = CurrentPlayerEquipment.ShieldPrice;
+
+		// 현재 아이템이 있고 사용하지 않은 상태라면 Sell
+		if (IsItemCanSelled(CurrentPlayerEquipment.EquippedShield, EShopItemType::Shield))
+		{
+			ResellItem(CurrentPlayerEquipment.EquippedShield, CurrentPlayerEquipment.ShieldPrice);
+		}
+		
+		// 현재 구매한 아이템으로 적용
+		CurrentPlayerEquipment.EquippedShield = TEXT("Light Shield");
+		
+		CurrentPlayerEquipment.MaxShield = 25;
+		CurrentPlayerEquipment.CurrentShield = 25;
+		CurrentPlayerEquipment.ShieldPrice = Price;
+	}
+	if (ItemName == "Heavy Shield")
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Buy Heavy Shield"));
+
+
+		PrevPlayerEquipment.EquippedShield = CurrentPlayerEquipment.EquippedShield;
+
+		PrevPlayerEquipment.MaxShield = CurrentPlayerEquipment.MaxShield;
+		PrevPlayerEquipment.CurrentShield = CurrentPlayerEquipment.CurrentShield;
+		PrevPlayerEquipment.ShieldPrice = CurrentPlayerEquipment.ShieldPrice;
+
+		// 현재 아이템이 있고 사용하지 않은 상태라면 Sell
+		if (IsItemCanSelled(CurrentPlayerEquipment.EquippedShield, EShopItemType::Shield))
+		{
+			ResellItem(CurrentPlayerEquipment.EquippedShield, CurrentPlayerEquipment.ShieldPrice);
+		}
+
+		CurrentPlayerEquipment.EquippedShield = TEXT("Heavy Shield");
+
+		CurrentPlayerEquipment.MaxShield = 50;
+		CurrentPlayerEquipment.CurrentShield = 50;
+		CurrentPlayerEquipment.ShieldPrice = Price;
+	}
+
+	if (ItemName == "Skill Q")
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Buy SKILL Q"));
+		SkillComponent->BuySkillQ();
+	}
+	if (ItemName == "Skill C")
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Buy SKILL C"));
+		SkillComponent->BuySkillC();
+	}
+	if (ItemName == "Skill E")
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Buy SKILL E"));
+		SkillComponent->BuySkillE();
+	}
+
+	OnEquipmentChanged.Broadcast();
+}
+
+void AValorantPlayer::ResellItem(const FString& ItemName, int32 Price)
+{
+	CurrentBudget += Price;
+
+	if (ItemName == "Vandal")
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Resell Vandal"));
+
+		CurrentPlayerEquipment.EquippedPrimary = TEXT("NONE");
+		CurrentPlayerEquipment.Primary = nullptr;
+		CurrentPlayerEquipment.PrimaryPrice = 0;
+	
+		// 다음무기로
+		EquipWeapon(1);
+		
+		// 무기 삭제
+		Weapons[0]->Destroy();
+		Weapons[0] = nullptr;
+	}
+
+	if (ItemName == "Light Shield" || ItemName == "Heavy Shield")
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Resell Shield"));
+		
+		CurrentPlayerEquipment.EquippedShield = TEXT("NONE");
+		CurrentPlayerEquipment.MaxShield = 0.f;
+		CurrentPlayerEquipment.CurrentShield = 0.f;
+		CurrentPlayerEquipment.ShieldPrice = 0;
+	}
+
+	if (ItemName == "Skill Q")
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Resell SKILL Q"));
+		SkillComponent->ResellSkillQ();
+	}
+	if (ItemName == "Skill C")
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Resell SKILL C"));
+		SkillComponent->ResellSkillC();
+	}
+	if (ItemName == "Skill E")
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Resell SKILL E"));
+		SkillComponent->ResellSkillE();
+	}
+
+	OnEquipmentChanged.Broadcast();
+}
+
+bool AValorantPlayer::IsItemCanSelled(const FString& ItemName, EShopItemType ItemType)
+{
+	if (ItemName == "NONE")
+	{
+		return false;
+	}
+
+	switch (ItemType)
+	{
+	case EShopItemType::Weapon:
+		if (ItemName == CurrentPlayerEquipment.EquippedPrimary)
+		{
+			// 해당 아이템을 갖고있고 한번도 사용한적이 없다면
+			ABaseWeapon* PrimaryWeapon = Weapons[0];
+			// 총알이 사용됐으면 사용한 총기
+			if (PrimaryWeapon->GetCurrentAmmo() < PrimaryWeapon->GetMaxAmmo()
+				|| PrimaryWeapon->GetCurrentLeftAmmo() < PrimaryWeapon->GetMaxLeftAmmo())
+			{
+				return false;
+			}
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	case EShopItemType::Shield:
+		if (ItemName == CurrentPlayerEquipment.EquippedShield)
+		{
+			// 해당 아이템을 갖고있고 한번도 사용한적이 없다면
+			if (CurrentPlayerEquipment.CurrentShield < CurrentPlayerEquipment.MaxShield)
+			{
+				// 현재 쉴드가 최대 쉴드 보다 적다면 쉴드가 사용됨
+				return false;
+			}
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	case EShopItemType::Skill:
+		if (ItemName == "SKILL Q")
+		{
+			// 현재 개수가 최소개수
+			if (0 < SkillComponent->GetSkillQCount())
+			{
+				UE_LOG(LogTemp, Display, TEXT("current Skill Q count : %d"), SkillComponent->GetSkillQCount());
+				return true;
+			}
+			else
+			{
+				UE_LOG(LogTemp, Display, TEXT("Cant Sell"));
+				return false;
+			}
+		}
+		if (ItemName == "SKILL E")
+		{
+			// 현재 개수가 최대 개수와 같으면 true
+			if (1 < SkillComponent->GetSkillECount())
+			{
+				UE_LOG(LogTemp, Display, TEXT("current Skill E count : %d"), SkillComponent->GetSkillECount());
+				return true;
+			}
+			else
+			{
+				UE_LOG(LogTemp, Display, TEXT("Cant Sell"));
+				return false;
+			}
+		}
+		if (ItemName == "SKILL C")
+		{
+			// 현재 개수가 최대 개수와 같으면 true
+			if (0 < SkillComponent->GetSkillCCount())
+			{
+				UE_LOG(LogTemp, Display, TEXT("current Skill C count : %d"), SkillComponent->GetSkillCCount());
+				return true;
+			}
+			else
+			{
+				UE_LOG(LogTemp, Display, TEXT("Cant Sell"));
+				return false;
+			}
+		}
+	case EShopItemType::NONE:
+		return false;
+	}
+
+	return false;
+}
+
+bool AValorantPlayer::IsItemEquipped(const FString& ItemName, EShopItemType ItemType)
+{	
+	switch (ItemType)
+	{
+	case EShopItemType::Weapon:
+		if (ItemName == CurrentPlayerEquipment.EquippedPrimary)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	case EShopItemType::Shield:
+		if (ItemName == CurrentPlayerEquipment.EquippedShield)
+		{
+			return true;						
+		}
+		else
+		{
+			return false;
+		}
+	case EShopItemType::Skill:
+		if (ItemName == "SKILL Q")
+		{
+			
+			// 현재 개수가 최대 개수와 같으면 true
+			if (SkillComponent->GetSkillMaxQCount() <= SkillComponent->GetSkillQCount())
+			{
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		if (ItemName == "SKILL E")
+		{
+			// 현재 개수가 최대 개수와 같으면 true
+			if (SkillComponent->GetSkillMaxECount() <= SkillComponent->GetSkillECount())
+			{
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		if (ItemName == "SKILL C")
+		{
+			// 현재 개수가 최대 개수와 같으면 true
+			if (SkillComponent->GetSkillMaxCCount() <= SkillComponent->GetSkillCCount())
+			{
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+	case EShopItemType::NONE:
+		return false;
+	}
+
+	return false;
 }
 
 void AValorantPlayer::AdjustSpeed()
@@ -738,6 +1058,18 @@ void AValorantPlayer::StopFootstep()
 	}
 }
 
+void AValorantPlayer::SubShield()
+{
+	if (CurrentPlayerEquipment.EquippedShield != "NONE")
+	{
+		CurrentPlayerEquipment.CurrentShield -= 10;
+		if (CurrentPlayerEquipment.CurrentShield <= 0)
+		{
+			CurrentPlayerEquipment.CurrentShield = 0;
+		}
+	}
+}
+
 
 void AValorantPlayer::StartReload()
 {
@@ -832,12 +1164,15 @@ float AValorantPlayer::GetCurrentHealth() const
 
 float AValorantPlayer::GetCurrentShiled() const
 {
-	return Shield;
+	return CurrentPlayerEquipment.CurrentShield;
 }
 
 float AValorantPlayer::GetCurrentShiledPercent() const
 {
-	return Shield / MaxShield;
+	if (CurrentPlayerEquipment.MaxShield == 0)
+		return 0.f;
+
+	return CurrentPlayerEquipment.CurrentShield / CurrentPlayerEquipment.MaxShield;
 }
 
 ABaseWeapon* AValorantPlayer::GetCurrentWeapon() const

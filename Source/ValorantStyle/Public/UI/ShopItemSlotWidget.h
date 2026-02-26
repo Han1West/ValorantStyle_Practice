@@ -30,6 +30,7 @@ class VALORANTSTYLE_API UShopItemSlotWidget : public UUserWidget
 
 public:
 	void SetItemData(UTexture2D* Icon, const FString& Name, int32 Price, EShopItemType Type);
+	void SetSkillItemData(UTexture2D* Icon, const FString& Name, int32 Price, EShopItemType Type, const FString& BaseSkillName);
 	void SetWeaponItemData(UTexture2D* Icon, const FString& Name, int32 Price, EShopItemType Type);
 
 	void SetSlotEnabled(bool bEnabled);
@@ -37,13 +38,12 @@ public:
 	void SetSkillMaxCount(int32 SkillCount) { SkillMaxCount = SkillCount; }
 	void SetSkillCurCount(int32 SkillCount) { SkillCurCount = SkillCount; }
 
+	void RefreshState();
 protected:
-	virtual void NativeConstruct() override;
-
 	UPROPERTY(meta = (BindWidget))
 	UImage* ItemIcon;
 	UPROPERTY(meta = (BindWidget))
-	UTextBlock* ItemName;
+	UTextBlock* ItemNameText;
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* ItemPriceText;
 	UPROPERTY(meta = (BindWidget))
@@ -52,18 +52,36 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
 	class UMaterialInterface* IconMaterial;
 
+	UPROPERTY(EditAnywhere, Category ="Style")
+	FButtonStyle NormalStyle;
+	UPROPERTY(EditAnywhere, Category = "Style")
+	FButtonStyle EqquippedStyle;
+	UPROPERTY(EditAnywhere, Category = "Style")
+	FButtonStyle UnenabledStyle;
+
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	int32 SkillMaxCount = 0;
 
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	int32 SkillCurCount = 0;
 
+	FString ItemName;
 	int32 ItemPrice = 0;
 
 	EShopItemType ItemType = EShopItemType::NONE;
+	bool bCanBuy = true;
 
 protected:
+	virtual void NativeConstruct() override;
+
+	virtual FReply NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
+
 	UFUNCTION()
 	void OnItemClicked();
+	
+	UFUNCTION()
+	void OnItemRightClicked();	
 
+	void RefreshStateSkills();;
+	void RefreshStateOthers();
 };

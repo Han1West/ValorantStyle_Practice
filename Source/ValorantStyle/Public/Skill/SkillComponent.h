@@ -144,6 +144,13 @@ public:
 
 	void GetKill();
 
+	void BuySkillQ() { SkillQCount++; }
+	void BuySkillC() { SkillCCount++; }
+	void BuySkillE() { SkillECount++; }
+	void ResellSkillQ() { SkillQCount--; }
+	void ResellSkillC() { SkillCCount--; }
+	void ResellSkillE() { SkillECount--; }
+
 protected:
 	UPROPERTY()
 	AValorantPlayer* OwnerPlayer = nullptr;
