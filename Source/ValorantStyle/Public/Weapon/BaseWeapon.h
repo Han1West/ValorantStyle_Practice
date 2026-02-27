@@ -112,7 +112,7 @@ protected:
 	int32 CurrentShotIndex = 0;
 	float LastFireTime = 0.f;
 	UPROPERTY(EditDefaultsOnly, Category = "Recoil")
-	float RecoilResetTime = 0.4f;
+	float RecoilResetTime = 0.15f;
 	UPROPERTY(EditDefaultsOnly, Category = "Recoil")
 	TArray<FVector2D> SprayPattern;
 	UPROPERTY(EditDefaultsOnly, Category = "Recoil")

@@ -13,5 +13,4 @@ UCLASS()
 class VALORANTSTYLE_API AValorantGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
-	
 };

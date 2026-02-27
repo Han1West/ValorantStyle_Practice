@@ -154,6 +154,9 @@ private:
 	void MoveFoward(float AxisValue);
 	void MoveRight(float AxisValue);
 	
+	void MouseLookUp(float Value);
+	void MouseTurn(float Value);
+
 	void JumpPressed();
 	void WalkPressed();
 	void WalkReleased();
