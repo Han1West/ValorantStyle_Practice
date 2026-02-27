@@ -2,6 +2,7 @@
 
 
 #include "Player/ValorantPlayer.h"
+#include "Player/ValorantPlayerController.h"
 #include "Bot/BotSpawner.h"
 #include "Weapon/BaseWeapon.h"
 #include "Magazine/Magazine.h"
@@ -170,8 +171,8 @@ void AValorantPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 	PlayerInputComponent->BindAxis(TEXT("MoveFoward"), this, &AValorantPlayer::MoveFoward);
 	PlayerInputComponent->BindAxis(TEXT("MoveRight"), this, &AValorantPlayer::MoveRight);
 
-	PlayerInputComponent->BindAxis(TEXT("LookUp"), this, &AValorantPlayer::AddControllerPitchInput);
-	PlayerInputComponent->BindAxis(TEXT("LookRight"), this, &AValorantPlayer::AddControllerYawInput);
+	PlayerInputComponent->BindAxis(TEXT("LookUp"), this, &AValorantPlayer::MouseLookUp);
+	PlayerInputComponent->BindAxis(TEXT("LookRight"), this, &AValorantPlayer::MouseTurn);
 
 	PlayerInputComponent->BindAction(TEXT("Jump"), IE_Pressed, this, &AValorantPlayer::JumpPressed);
 
@@ -204,9 +205,6 @@ void AValorantPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 	PlayerInputComponent->BindAction(TEXT("SkillC"), IE_Released, this, &AValorantPlayer::SkillCReleased);
 	PlayerInputComponent->BindAction(TEXT("SkillUlti"), IE_Pressed, this, &AValorantPlayer::SkillUltiPressed);
 	PlayerInputComponent->BindAction(TEXT("SkillUlti"), IE_Released, this, &AValorantPlayer::SkillUltiReleased);
-
-	PlayerInputComponent->BindAction(TEXT("PickJett"), IE_Pressed, this, &AValorantPlayer::SetCharaterTypeToJett);
-	PlayerInputComponent->BindAction(TEXT("PickPhoenix"), IE_Pressed, this, &AValorantPlayer::SetCharaterTypeToPhoenix);
 
 	PlayerInputComponent->BindAction(TEXT("SubShield"), IE_Pressed, this, &AValorantPlayer::SubShield);
 
@@ -588,6 +586,22 @@ void AValorantPlayer::MoveFoward(float AxisValue)
 void AValorantPlayer::MoveRight(float AxisValue)
 {
 	AddMovementInput(GetActorRightVector() * AxisValue);
+}
+
+void AValorantPlayer::MouseLookUp(float Value)
+{
+	if (AValorantPlayerController* PC = Cast<AValorantPlayerController>(GetController()))
+	{
+		AddControllerPitchInput(Value * PC->MouseSensitivity);
+	}	
+}
+
+void AValorantPlayer::MouseTurn(float Value)
+{
+	if (AValorantPlayerController* PC = Cast<AValorantPlayerController>(GetController()))
+	{
+		AddControllerYawInput(Value * PC->MouseSensitivity);
+	}
 }
 
 void AValorantPlayer::JumpPressed()

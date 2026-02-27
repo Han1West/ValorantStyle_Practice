@@ -201,7 +201,7 @@ FVector2D ABaseWeapon::GetCurrentRecoil() const
 	// 특정 시점 부터 약간의 미세 랜덤 반동 추가
 	if (Index > 4)
 	{
-		Recoil.X += FMath::RandRange(-0.1f, 01.f);
+		Recoil.X += FMath::RandRange(-0.1f, 0.1f);
 		Recoil.Y += FMath::RandRange(0.f, 0.1f);
 	}
 	
