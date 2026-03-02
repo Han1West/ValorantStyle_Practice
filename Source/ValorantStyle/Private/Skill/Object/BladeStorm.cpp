@@ -4,6 +4,7 @@
 #include "Skill/Object/BladeStorm.h"
 #include "Player/ValorantPlayer.h"
 #include "Skill/JettSkillComponent.h"
+#include "Bot/DummyBot.h"
 
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
@@ -77,23 +78,6 @@ void ABladeStorm::SetProjectile(const FVector& FireDirection, const FRotator& Ro
 	ProjectileComponent->UpdateComponentVelocity();	
 }
 
-void ABladeStorm::NotifyKill(AActor* Victim)
-{
-	if (AValorantPlayer* Player = Cast<AValorantPlayer>(GetOwner()))
-	{
-		if (UJettSkillComponent* Skill = Cast<UJettSkillComponent>(Player->GetSkillComponent()))
-		{
-			if (bSingleFired)
-			{
-				Skill->OnBladeKillSuccess();
-			}
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("Failed TO Cast SkillComponent"));
-		}
-	}
-}
 
 void ABladeStorm::OnBladeHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
@@ -107,16 +91,31 @@ void ABladeStorm::OnBladeHit(UPrimitiveComponent* HitComp, AActor* OtherActor, U
 	
 	FVector ShotDirection = ProjectileComponent->Velocity.GetSafeNormal();
 	FPointDamageEvent DamageEvent(Damage, Hit, ShotDirection, nullptr);
+	AValorantPlayer* OwnerPlayer = Cast<AValorantPlayer>(GetOwner());
 	AController* OwnerController = nullptr;
-
-	if (AValorantPlayer* OwnerPlayer = Cast<AValorantPlayer>(GetOwner()))
+	
+	if (OwnerPlayer)
 	{
 		OwnerController = OwnerPlayer->GetController();
-	}
+	}	
+
 
 	OtherActor->TakeDamage(Damage, DamageEvent, OwnerController, this);
 
-	if(OtherActor)
+
+	if (ADummyBot* Dummy = Cast<ADummyBot>(OtherActor))
+	{
+		if (Dummy->IsDead())
+		{
+			bEnemyKilled = true;
+		}
+	}
+
+	if (UJettSkillComponent* Skill = Cast<UJettSkillComponent>(OwnerPlayer->GetSkillComponent()))
+	{
+		Skill->OnBladeResolved(bEnemyKilled, bSingleFired);
+	}
+
 
 	Destroy();
 }

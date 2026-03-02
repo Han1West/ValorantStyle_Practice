@@ -77,15 +77,6 @@ float ADummyBot::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
 			// 플레이어에게 킬정보 넘김
 			Player->PlayerGetKill();
 		}
-
-		if (ABladeStorm* Blade = Cast<ABladeStorm>(DamageCauser))
-		{
-			Blade->NotifyKill(this);
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("Failed Cast TO Baldestorm"));
-		}
 	}
 
 	return TotalDamageToApplied;

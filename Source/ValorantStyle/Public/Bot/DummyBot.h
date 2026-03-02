@@ -81,4 +81,6 @@ public:
 	void SetUseShield(bool bUse) { bUseShield = bUse; }
 	void OnShield(bool bMax);
 	void OffShield();
+
+	float GetHealth() { return Health; }
 };

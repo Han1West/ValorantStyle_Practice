@@ -43,7 +43,7 @@ public:
 
 	virtual void CheckPlayerKeyInput(FKey PressedKey) override;
 
-	void OnBladeKillSuccess();
+	void OnBladeResolved(bool KillSuccess, bool SingleFire);
 
 	UFUNCTION()
 	void OnFlyStartSoundFinished();

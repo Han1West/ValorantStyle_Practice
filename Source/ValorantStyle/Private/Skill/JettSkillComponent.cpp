@@ -596,9 +596,22 @@ void UJettSkillComponent::CheckPlayerKeyInput(FKey PressedKey)
 	}
 }
 
-void UJettSkillComponent::OnBladeKillSuccess()
+void UJettSkillComponent::OnBladeResolved(bool KillSuccess, bool SingleFire)
 {
-	InitialSpawnBladestorm();
+	ActivatedBladestormsCount--;
+
+	if (KillSuccess && SingleFire)
+	{
+		InitialSpawnBladestorm();
+		return;
+	}
+
+	if (ActivatedBladestormsCount <= 0)
+	{
+		ActivatedBladestormsCount = 0;
+		CurrentUltimateCount = 0;
+		EndSkillUlti();
+	}
 }
 
 void UJettSkillComponent::UpdateCloudburstDirection()
@@ -760,6 +773,8 @@ void UJettSkillComponent::InitialSpawnBladestorm()
 	}
 	ActivatedBladestormsCount = 5;
 	bSkillUltiCasting = true;
+
+	UE_LOG(LogTemp, Warning, TEXT("Spawn Called"));
 }
 
 void UJettSkillComponent::SpawnBladestorm()
@@ -786,8 +801,6 @@ void UJettSkillComponent::RespawnBladestormAfterUsingSkill()
 	bSkillUltiCasting = true;
 	bWasUsingUlti = false;
 	OwnerPlayer->SetCanSwapWeapon(true);
-
-	UE_LOG(LogTemp, Display, TEXT("Respawned Bladestrom !!!!!"));
 }
 
 void UJettSkillComponent::DeSpawnBladeStorm()
@@ -810,13 +823,6 @@ void UJettSkillComponent::DeSpawnOneBladeStorm()
 			// ÇÑ°³ÀÇ Ä®³¯ÆøÇ³À» ºñÈ°¼ºÈ­ Çß´Ù¸é return
 			Bladestorms[i]->SetActorHiddenInGame(true);
 			Bladestorms[i]->SetSpanwed(false);
-			ActivatedBladestormsCount--;
-			if (ActivatedBladestormsCount <= 0)
-			{
-				ActivatedBladestormsCount = 0;
-				CurrentUltimateCount = 0;
-				EndSkillUlti();				
-			}
 			return;
 		}
 	}
@@ -842,4 +848,6 @@ void UJettSkillComponent::EndSkillUlti()
 	bSkillUltiCasting = false;
 	OwnerPlayer->RequestRevealHands(true);
 	bDeactivatedPlayerHands = false;
+
+	UE_LOG(LogTemp, Warning, TEXT("End Skill Called"));
 }
