@@ -88,9 +88,7 @@ void AValorantPlayer::BeginPlay()
 
 	FootstepAudio = UGameplayStatics::SpawnSoundAttached(FootstepSound, GetRootComponent());
 
-	FootstepAudio->Stop();
-
-	SetCharacterType(ECharacterType::Jett);
+	FootstepAudio->Stop();	
 }
 
 void AValorantPlayer::Landed(const FHitResult& Hit)
@@ -104,6 +102,11 @@ void AValorantPlayer::Landed(const FHitResult& Hit)
 void AValorantPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (CurrentCharacterType == ECharacterType::NONE)
+	{
+		SetCharacterType(ECharacterType::Jett);
+	}
 
 	// 현재 플레이어의 상태에 따라 Speed값을 갱신한다.
 	AdjustSpeed();
@@ -215,6 +218,13 @@ void AValorantPlayer::PlayerGetKill()
 {
 	// 플레이어가 킬 한 정보를 스킬에 넘긴다
 	SkillComponent->GetKill();
+
+	// 크레딧 추가
+	CurrentBudget += 200;
+	if (CurrentBudget > MaxBudget)
+	{
+		CurrentBudget = MaxBudget;
+	}
 }
 
 void AValorantPlayer::SetHandMeshRelativeLocationRotaiton(const FVector& Location, const FRotator& Rotation)

@@ -32,8 +32,6 @@ public:
 	void SetSingleFired(bool Single) { bSingleFired = Single; }
 
 	bool IsSpawned() { return bSpawned; }
-public:
-	void NotifyKill(AActor* Victim);
 
 private:
 	UPROPERTY()
@@ -60,7 +58,7 @@ private:
 	bool bAttached = false;
 	bool bSpawned = false;
 	bool bSingleFired = false;
-
+	bool bEnemyKilled = false;
 private:
 	UFUNCTION()
 	void OnBladeHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
