@@ -26,7 +26,7 @@ ABladeStorm::ABladeStorm()
 	ProjectileComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileComponent"));
 	ProjectileComponent->UpdatedComponent = BladeMesh;		
 	ProjectileComponent->InitialSpeed = 0.f;
-	ProjectileComponent->MaxSpeed = 4000.f;
+	ProjectileComponent->MaxSpeed = 12000.f;
 	ProjectileComponent->bRotationFollowsVelocity = false;
 	ProjectileComponent->bInitialVelocityInLocalSpace = false;
 	ProjectileComponent->SetAutoActivate(true);	

@@ -259,7 +259,7 @@ private:
 
 	ECharacterType CurrentCharacterType = ECharacterType::NONE;
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Audio", meta = (AllowPrivateAccess = "true"))
 	UAudioComponent* FootstepAudio;
 
 	UPROPERTY(EditDefaultsOnly, Category="Sound")

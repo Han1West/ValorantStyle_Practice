@@ -43,7 +43,7 @@ private:
 	TArray<ADummyBot*> SpawnedBotArray;
 
 	UPROPERTY(EditDefaultsOnly)
-	int32 MaxSpawnCount = 20;
+	int32 MaxSpawnCount = 10;
 	
 	UPROPERTY(EditDefaultsOnly)
 	int32 CurSpawnedCount = 0;
