@@ -41,6 +41,10 @@ AValorantPlayer::AValorantPlayer()
 	SkillComponent = CreateDefaultSubobject<USkillComponent>(TEXT("SkillComp"));
 	JettSkill = CreateDefaultSubobject<UJettSkillComponent>(TEXT("JettSKill"));
 	PhoenixSkill = CreateDefaultSubobject<UPhoenixSkillComponent>(TEXT("PhoenixSkill"));
+
+	FootstepAudio = CreateDefaultSubobject<UAudioComponent>(TEXT("FootstopAudio"));
+	FootstepAudio->SetupAttachment(GetRootComponent());
+	FootstepAudio->bAutoActivate = false;
 }
 
 // Called when the game starts or when spawned
@@ -86,9 +90,10 @@ void AValorantPlayer::BeginPlay()
 
 	BotSpawner = Cast<ABotSpawner>(UGameplayStatics::GetActorOfClass(GetWorld(), ABotSpawner::StaticClass()));
 
-	FootstepAudio = UGameplayStatics::SpawnSoundAttached(FootstepSound, GetRootComponent());
-
-	FootstepAudio->Stop();	
+	if (FootstepAudio && FootstepSound)
+	{
+		FootstepAudio->SetSound(FootstepSound);
+	}
 }
 
 void AValorantPlayer::Landed(const FHitResult& Hit)
@@ -123,18 +128,19 @@ void AValorantPlayer::Tick(float DeltaTime)
 	{
 		bMove = false;		
 	}
-
-	const bool bShoudPlay = 10.f < GetVelocity().Size2D() && !bWalk && !bCrouch && !IsAirborne();
+	
 
 	if (FootstepAudio)
 	{
+		const bool bShoudPlay = 10.f < GetVelocity().Size2D() && !bWalk && !bCrouch && !IsAirborne();
+
 		if (bShoudPlay)
 		{
 			AccumulatedMoveTime += DeltaTime;
 			if (AccumulatedMoveTime >= StartThreshold && !FootstepAudio->IsPlaying())
 			{
 				FootstepAudio->Play();
-			}			
+			}					
 		}
 		else
 		{

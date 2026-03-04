@@ -54,7 +54,6 @@ void ACloudburst::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
 	NewScale *= 5.f;
 
 	MeshComponent->SetWorldScale3D(NewScale);
-	UE_LOG(LogTemp, Warning, TEXT("Hit Event!"));
 }
 
 // Called every frame
