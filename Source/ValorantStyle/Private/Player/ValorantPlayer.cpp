@@ -124,26 +124,27 @@ void AValorantPlayer::Tick(float DeltaTime)
 		bMove = false;		
 	}
 
-	if (10.f < GetVelocity().Size2D() && !bWalk && !bCrouch &&!IsAirborne())
+	const bool bShoudPlay = 10.f < GetVelocity().Size2D() && !bWalk && !bCrouch && !IsAirborne();
+
+	if (FootstepAudio)
 	{
-		AccumulatedMoveTime += DeltaTime;
-		AccumulatedStopTime = 0.f;
-		if (AccumulatedMoveTime >= StartThreshold)
+		if (bShoudPlay)
 		{
-			PlayFootstep();
+			AccumulatedMoveTime += DeltaTime;
+			if (AccumulatedMoveTime >= StartThreshold && !FootstepAudio->IsPlaying())
+			{
+				FootstepAudio->Play();
+			}			
+		}
+		else
+		{
+			if (FootstepAudio->IsPlaying())
+			{
+				FootstepAudio->Stop();
+			}		
+			AccumulatedMoveTime = 0.f;
 		}
 	}
-	else
-	{
-		AccumulatedStopTime += DeltaTime;
-		StopFootstep();		
-	}
-
-	if (AccumulatedStopTime >= StopThreshold)
-	{
-		AccumulatedMoveTime = 0.f;
-	}
-
 
 	if (bHideHands)
 	{
@@ -1087,23 +1088,6 @@ void AValorantPlayer::SetCharacterType(ECharacterType Type)
 	}
 }
 
-void AValorantPlayer::PlayFootstep()
-{
-	if (!bIsFootstepPlaying && FootstepAudio)
-	{
-		FootstepAudio->Play();
-		bIsFootstepPlaying = true;
-	}
-}
-
-void AValorantPlayer::StopFootstep()
-{
-	if (bIsFootstepPlaying && FootstepAudio)
-	{
-		FootstepAudio->Stop();
-		bIsFootstepPlaying = false;
-	}
-}
 
 void AValorantPlayer::SubShield()
 {
