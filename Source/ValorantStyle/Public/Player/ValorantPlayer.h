@@ -195,9 +195,6 @@ private:
 	void SelectWeapon1(); 
 
 	void ApplyRecoil(float DeltaTime);
-
-	void PlayFootstep();
-	void StopFootstep();
 	
 	void SubShield();
 
@@ -273,11 +270,7 @@ private:
 	USoundBase* JumplandingSound;
 
 	float AccumulatedMoveTime = 0.f;
-	float AccumulatedStopTime = 0.f;
 	float StartThreshold = 0.5f;
-	float StopThreshold = 0.2f;
-
-	bool bIsFootstepPlaying = false;
 
 	FVector AdjustLocation;
 	FRotator AdjustRotation;
@@ -286,7 +279,7 @@ private:
 	PlayerEquipment PrevPlayerEquipment;
 
 private:
-	float OriginMaxSpeed = 0.f;
+	float OriginMaxSpeed = 0.f;	
 	int32 CurrentWeaponIdx = -1;
 	int32 TemporaryWeaponIdx = 0;
 
